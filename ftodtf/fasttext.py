@@ -1,5 +1,6 @@
 #!/usr/env python3
 
+# Copyright 2018 The FToDTF Authors.
 # Copyright 2015 The TensorFlow Authors. All Rights Reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,6 +14,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+#
+# ATTENTION: the original file (found at https://github.com/tensorflow/tensorflow/blob/r1.8/tensorflow/examples/tutorials/word2vec/word2vec_basic.py)
+# has been modified by the FToDTF Authors!
+#
+#
 # ==============================================================================
 """Basic word2vec example."""
 
