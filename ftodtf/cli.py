@@ -1,7 +1,7 @@
 import argparse
 import sys
 
-import fasttext
+import ftodtf.fasttext as fasttext
 
 def cli_main():
 

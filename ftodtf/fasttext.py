@@ -29,11 +29,11 @@ import random
 import tensorflow as tf
 import numpy as np
 
-import input
-import model
-import evaluation
+import ftodtf.input as input
+import ftodtf.model as model
+import ftodtf.evaluation as evaluation
 
-current_path = os.path.dirname(os.path.realpath(sys.argv[0]))
+current_path = os.getcwd()
 default_logpath = os.path.join(current_path,"log")
 
 # TODO: This function is way to large and has to many arguments. We should try to split this up.
