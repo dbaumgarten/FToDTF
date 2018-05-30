@@ -3,6 +3,19 @@ import setuptools
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
+
+
+def find_dependencies():
+    deps = ["numpy"]
+    try:
+        import tensorflow
+    # Only list tensorflow as requirement if not already installed
+    except ImportError:
+        deps.append("tensorflow")
+    return deps
+
+
+
 setuptools.setup(
     name="ftodtf",
     version="0.0.1",
@@ -18,5 +31,6 @@ setuptools.setup(
     ),
     entry_points = {
         'console_scripts': ['fasttext=ftodtf.cli:cli_main'],
-    }
+    },
+    install_requires = find_dependencies()
 )
