@@ -10,7 +10,7 @@ Dadurch ist es möglich die Ähnlichkeiten auch von unbekannten Wörten zu besti
 
 #### Algorithmus:
 
-1) Zubeginn wird ein Ziel-Wort und die dazugehörigen positiven Kontext-Worte aus dem Trainingskorpus ermittelt. Des Weiteren nimmt man eine zufällige Anzahl 
+1) Zu Beginn wird ein Ziel-Wort und die dazugehörigen positiven Kontext-Worte aus dem Trainingskorpus ermittelt. Des Weiteren nimmt man eine zufällige Anzahl 
 von _N_ negativen Kontext-Wörtern. Dieses Prozedere wird als negative sampling bezeichnet und dient der Vermeidung alle Gewichte beim Forwärtspropagieren anpassen müssen.
 2) Das Ziel-Wort wird anschließend in n-grame zerlegt, d.h. bei einer Definition _n_ = 3 entspricht das Wort laufen dem Bündel
 <la, lau, auf, ufe, fen, en>.
