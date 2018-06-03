@@ -11,18 +11,18 @@ Dadurch ist es möglich die Ähnlichkeiten auch von unbekannten Wörten zu besti
 #### Algorithmus:
 
 1) Zu Beginn wird ein Ziel-Wort und die dazugehörigen positiven Kontext-Worte aus dem Trainingskorpus ermittelt. Des Weiteren nimmt man eine zufällige Anzahl 
-von _N_ negativen Kontext-Wörtern. Dieses Prozedere wird als negative sampling bezeichnet und dient der Vermeidung alle Gewichte beim Forwärtspropagieren anpassen müssen.
-2) Das Ziel-Wort wird anschließend in n-grame zerlegt, d.h. bei einer Definition _n_ = 3 entspricht das Wort laufen dem Bündel
+von _N_ negativen Kontext-Wörtern. Dieses Prozedere wird als negative sampling bezeichnet und dient der Vermeidung, alle Gewichte beim Forwärtspropagieren anpassen müssen.
+2) Das Ziel-Wort wird anschließend in n-gramme zerlegt, d.h. bei einer Definition _n_ = 3 entspricht das Wort laufen dem Bündel
 <la, lau, auf, ufe, fen, en>.
-3) Die einzelnen n-grame werden über ein Hashingverfahren in Zahlen umgewandelt und mithilfe des mod Operators 
-zu einem Indize transformiert. Dieses Vorgehen ist aufgrund des großes Speicherbedarfs der n-grame-Matrix sehr empfehlenswert. Im original Dokument [1] wird das Hashverfahren FNV-1a verwendet, in dieser Arbeit jedoch sollen
-verschiedene Hashverfahren ausprobiert werden. Das Indize repräsentiert eine Zeile der n-gram-Matrix. Bei dieser Matrix handelt es 
+3) Die einzelnen n-gramme werden über ein Hashverfahren in Zahlen umgewandelt und mithilfe des mod Operators 
+zu einem Indize transformiert. Dieses Vorgehen ist aufgrund des großen Speicherbedarfs der n-gram-Matrix sehr empfehlenswert. Im original Dokument [1] wird das Hashverfahren FNV-1a verwendet, in dieser Arbeit jedoch sollen
+verschiedene Hashverfahren ausprobiert werden. Ein Indize repräsentiert eine Zeile der n-gram-Matrix. Bei dieser Matrix handelt es 
 sich um die gewünschte Worteinbettung, welche man trainiert haben möchte.
 3) Das Vorwärtspropagieren des Wortes besteht aus: 
    1) Summieren der Einträge der n-gram Matrix, welche durch die Hashwerte mod _K_ indiziert werden.
    _K_ ist die vordefinierte Größe der n-gram-Matrix.
-   2) Bildung des Skalarproduktes zwischen den einzelnen Kontext-Worten und der n-gram-Summe.
-   Die Kontext-Wörter werden equivalent dem "word2vec" Model als eine Wortmatrix repräsentiert.
+   2) Bildung des Skalarproduktes zwischen den einzelnen Kontext-Wörtern und der n-gram-Summe.
+   Die Kontext-Wörter werden equivalent dem word2vec Model als eine Wortmatrix repräsentiert.
    3) Im letzen Schritt ist die Verlustfunktion über das Gradientenverfahren zu minimieren und somit die "Gewichte" der n-gram Matrix anzupassen.
    Die Verlustfunktion entspricht dabei der negativen Log-Likelihood-Funktion.
 
