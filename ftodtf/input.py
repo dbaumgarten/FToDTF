@@ -7,8 +7,9 @@ import numpy as np
 import collections
 import random
 from tempfile import gettempdir
+from nltk import word_tokenize
 
-def maybe_download(url, filename, expected_bytes):
+def maybe_download(url, filename, expected_bytes, unzip=True):
   """Download a file if not present, and make sure it's the right size."""
   local_filename = os.path.join(gettempdir(), filename)
   if not os.path.exists(local_filename):
@@ -21,63 +22,91 @@ def maybe_download(url, filename, expected_bytes):
     print(statinfo.st_size)
     raise Exception('Failed to verify ' + local_filename +
                     '. Can you get to it with a browser?')
+
+  if unzip:
+    zip_ref = zipfile.ZipFile(local_filename, 'r')
+    local_filename = os.path.join(gettempdir(),zip_ref.namelist()[0])
+    if not os.path.exists(local_filename):
+      print("Unpacking file...")
+      zip_ref.extract(zip_ref.namelist()[0],path=gettempdir())
+    zip_ref.close()
+
   return local_filename
 
+class InputProcessor():
+  """Handles the creation of training-examble-batches from the raw training-text"""
+  def __init__(self,filename,skip_window,batch_size,vocab_size):
+    self.filename = filename
+    self.skip_window = skip_window
+    self.batch_size = batch_size
+    self.vocab_size = vocab_size
 
-def read_data(filename):
-  """Extract the first file enclosed in a zip file as a list of words."""
-  with zipfile.ZipFile(filename) as f:
-    data = tf.compat.as_str(f.read(f.namelist()[0])).split()
-  return data
+  def preprocess(self):
+    """ Do the needed proprocessing of the dataset. Count word frequencies, create a mapping word->int"""
+    self.wordcount = collections.Counter(self._words_in_file())
+    idx = 0
+    self.dict = {}
+    # Assign a number to every word we have. 0 = the most common word
+    for word, _ in self.wordcount.most_common():
+      # We only want vocab_size words in or dictionary. Skip the remaining uncommon words
+      if idx == self.vocab_size:
+        break
+      self.dict[word] = idx
+      idx += 1
+    self.reversed_dict = dict(zip(self.dict.values(), self.dict.keys()))
 
-def build_dataset(words, n_words):
-  """Process raw inputs into a dataset."""
-  count = [['UNK', -1]]
-  count.extend(collections.Counter(words).most_common(n_words - 1))
-  dictionary = dict()
-  for word, _ in count:
-    dictionary[word] = len(dictionary)
-  data = list()
-  unk_count = 0
-  for word in words:
-    index = dictionary.get(word, 0)
-    if index == 0:  # dictionary['UNK']
-      unk_count += 1
-    data.append(index)
-  count[0][1] = unk_count
-  reversed_dictionary = dict(zip(dictionary.values(), dictionary.keys()))
-  return data, count, dictionary, reversed_dictionary
+  def _words_in_file(self):
+    """Returns a generator over all words in the file"""
+    with open(self.filename) as f:
+      for line in f:
+        words = line.split()
+        for word in words:
+          yield word
 
+  def string_samples(self):
+    """ Returns a generator for samples (targetword->contextword) """
+    # possible positions of context-words relative to a target word
+    contextoffsets = [x for x in range(-self.skip_window,self.skip_window+1) if x != 0]
+    with open(self.filename) as f:
+      for line in f:
+        idx = 0
+        words = line.split()
+        for word in words:
+          # choose a random context word. Take special care to stay in the bounds of the list
+          contextoffset = random.choice(contextoffsets)
+          if idx+contextoffset < 0 or idx+contextoffset > len(words):
+            contextoffset = contextoffset*-1
+          yield (word,words[idx+contextoffset])
+          idx += 1
 
-# TODO: global variables are evil. We can do better than this. Maybe a closure?
-"""Used for batch-generation. Points to the current position inside the input-data"""
-data_index = 0
+  def _lookup_label(self,gen):
+    """ Maps the words in the input-tuple to numbers"""
+    for e in gen:
+      try:
+        yield (self.dict[e[0]],self.dict[e[1]])
+      except KeyError:
+        pass
 
-def generate_batch(data, batch_size, num_skips, skip_window):
-  """Generates and returns the next batch of training-data"""
-  global data_index
-  assert batch_size % num_skips == 0
-  assert num_skips <= 2 * skip_window
-  batch = np.ndarray(shape=(batch_size), dtype=np.int32)
-  labels = np.ndarray(shape=(batch_size, 1), dtype=np.int32)
-  span = 2 * skip_window + 1  # [ skip_window target skip_window ]
-  buffer = collections.deque(maxlen=span)  # pylint: disable=redefined-builtin
-  if data_index + span > len(data):
-    data_index = 0
-  buffer.extend(data[data_index:data_index + span])
-  data_index += span
-  for i in range(batch_size // num_skips):
-    context_words = [w for w in range(span) if w != skip_window]
-    words_to_use = random.sample(context_words, num_skips)
-    for j, context_word in enumerate(words_to_use):
-      batch[i * num_skips + j] = buffer[skip_window]
-      labels[i * num_skips + j, 0] = buffer[context_word]
-    if data_index == len(data):
-      buffer.extend(data[0:span])
-      data_index = span
-    else:
-      buffer.append(data[data_index])
-      data_index += 1
-  # Backtrack a little bit to avoid skipping words in the end of a batch
-  data_index = (data_index + len(data) - span) % len(data)
-  return batch, labels
+  def _repeat(self,generator_func):
+    """ Repeat a given generator forever """
+    g = generator_func()
+    while True:
+      try:
+        yield g.__next__()
+      except StopIteration:
+        g = generator_func()
+
+  def _batch(self,samples):
+    """ Pack self.batch_size of training samples into a batch """
+    while True:
+      inputs = []
+      labels = []
+      for _ in range(0,self.batch_size):
+        sample = samples.__next__()
+        inputs.append(sample[0])
+        labels.append([sample[1]])
+      yield inputs,labels
+
+  def batches(self):
+    """ Returns a generator the will yield an infinite amout of training-batches ready to feed into the model"""
+    return self._batch(self._lookup_label(self._repeat(self.string_samples)))

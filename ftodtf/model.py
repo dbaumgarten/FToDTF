@@ -13,7 +13,7 @@ class Model():
             # Input data.
             with tf.name_scope('inputs'):
                 self.train_inputs = tf.placeholder(tf.int32, shape=[batch_size])
-                self.train_labels = tf.placeholder(tf.int32, shape=[batch_size, 1])
+                self.train_labels = tf.placeholder(tf.int32, shape=[batch_size,1])
                 valid_dataset = tf.constant(valid_examples, dtype=tf.int32)
 
             # Ops and variables pinned to the CPU because of missing GPU implementation

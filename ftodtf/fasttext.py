@@ -37,7 +37,7 @@ current_path = os.getcwd()
 default_logpath = os.path.join(current_path,"log")
 
 # TODO: This function is way to large and has to many arguments. We should try to split this up.
-def run(log_dir=default_logpath, steps = 10001, vocabulary_size = 50000,  batch_size = 128, embedding_size = 128, skip_window = 1, num_skips = 2, num_sampled = 64, valid_size = 16, valid_window = 100):
+def run(log_dir=default_logpath, steps = 100001, vocabulary_size = 50000,  batch_size = 128, embedding_size = 128, skip_window = 1, num_skips = 2, num_sampled = 64, valid_size = 16, valid_window = 100):
   """  log_dir: where to write the generated files \n
        steps: how many training-steps should be performed \n
        vocabulary_size: How many words the vocabulary will have. Only the vocabulary_size most frequent words will be processed. \n
@@ -59,28 +59,10 @@ def run(log_dir=default_logpath, steps = 10001, vocabulary_size = 50000,  batch_
 
   # Read the data into a list of strings.
   print("Reading dataset")
-  vocabulary = input.read_data(filename)
-  print('Data size', len(vocabulary))
+  p = input.InputProcessor(filename,1,128,vocabulary_size)
+  p.preprocess()
 
-  # Filling 4 global variables:
-  # data - list of codes (integers from 0 to vocabulary_size-1).
-  #   This is the original text but words are replaced by their codes
-  # count - map of words(strings) to count of occurrences
-  # dictionary - map of words(strings) to their codes(integers)
-  # reverse_dictionary - maps codes(integers) to words(strings)
-  data, count, dictionary, reverse_dictionary = input.build_dataset(
-      vocabulary, vocabulary_size)
-  del vocabulary  # Hint to reduce memory.
-  print('Most common words (+UNK)', count[:5])
-  print('Sample data', data[:10], [reverse_dictionary[i] for i in data[:10]])
-
-
-  # Show a sample data-batch
-  batch, labels = input.generate_batch(data=data, batch_size=8, num_skips=2, skip_window=1)
-  for i in range(8):
-    print(batch[i], reverse_dictionary[batch[i]], '->', labels[i, 0],
-          reverse_dictionary[labels[i, 0]])
-
+  reverse_dictionary = p.reversed_dict
   # Step 4: Build and train a skip-gram model.
 
   # We pick a random validation set to sample nearest neighbors. Here we limit the
@@ -101,11 +83,11 @@ def run(log_dir=default_logpath, steps = 10001, vocabulary_size = 50000,  batch_
     # We must initialize all variables before we use them.
     m.init.run()
     print('Initialized')
+    batches = p.batches()
 
     average_loss = 0
     for step in range(steps):
-      batch_inputs, batch_labels = input.generate_batch(data,batch_size, num_skips,
-                                                  skip_window)
+      batch_inputs, batch_labels = batches.__next__()
       feed_dict = {m.train_inputs: batch_inputs, m.train_labels: batch_labels}
 
       # Define metadata variable.
