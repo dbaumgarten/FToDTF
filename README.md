@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/dbaumgarten/FToDTF.svg?branch=master)](https://travis-ci.org/dbaumgarten/FToDTF)
 # FToDTF
 
 Todo: Project description
