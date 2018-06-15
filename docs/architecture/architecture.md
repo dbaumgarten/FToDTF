@@ -69,6 +69,59 @@ Der aktuelle Plan sieht vor führ das Deployment der verteilten Umgebung auf Doc
 Während der Entwicklungsphase wird docker-compose genutzt um auf einem einzelnen Rechner mehrere isolierte Instanzen der Software zu starten, die mittels eines virtuellen Netzwerkes miteinander kommunizieren.  
 Für das Deployment auf dem Galaxy-Cluster soll docker-swarm benutzt werden, wodurch die verschiedenen Instanzen der Software auf mehrere physische Rechner verteilt und dennoch zentral verwaltet werden können. Laut der Webseite des Uni-Rechenzentrums ist Docker auf den Nodes des Galaxy-Clusters bereits installiert.
 
+## Daten-Vorverarbeitung
+
+Die Vorverarbeitung der Trainingsdaten geschieht mittels NLTK. Dabei werden beispielsweise Satzzeichen entfernt, Worte werden in ein einheitliches Format überführt und der Trainingskorpus in Inhaltlich zusammenhängende Blöcke geteilt.
+Das Ergebnis der Vorverarbeitung ist eine einzelne große Text-Datei. Jede Zeile repräsentiert einen inhaltlich zusammenhängenden Block (z.B. Artikel, Absätze, Sätze o.ä.).
+Eventuell wird die Berechnung einiger für den Fast-text-Algorithmus nötigen Werte (z.B. Worfrequenzen) bereits in diesem Schritt ermittelt, so das dies später nicht mehr getan werden muss.
+Das eigentliche Programm ließt diese Datei ein und generiert daraus on-the-fly Trainingsbatches aus Targetword-Contextword-Paaren für das neuronale Netzwerk.
+
+## Details zur Verteilung
+
+Im Folgenden wird der Ablauf des verteilten Algorithmus beschrieben.
+Wir speichern die Trainingsdaten an einem Ort, die von jeder Instanz erreichbar ist. 
+Auf jeden beteiligten Node wird mittels Dockerswarm eine Instanz unseres Programms gestartet.
+Den Instanzen werden mittels Kommandozeilenparameter Informationen übergeben, die vom Programm mittels des
+argparse Moduls verarbeitet werden.
+
+Darunter sind: 
+
+- die IP-Adresse und Ports der anderen Clusterteilnehmer
+- ob die Instanz ein Parameterserver oder ein Worker ist
+- die Nummer der Instanz unter den Workern/Parameterservern
+- Hyperparameter des Modells
+- Speicherort der Trainingsdaten (auf einem erreichbaren Filesystems)
+
+Das Programm startet jeweils einen Tensorflowserver auf dem lokalen Rechner.
+Die Parameterserver joinen dem Cluster und warten auf das Ende des Trainings.
+Jeder Worker baut einen eigenen Graph und sendet ihn an seinen lokalen Tensorflowserver.
+Die Worker warten darauf, dass die gemeinsamen Variablen initialisiert werden und alle Worker dem Cluster beigetreten 
+sind. 
+Anschließend berechnet jeder Worker einige Werte über den gesamten Datensatz darunter beispielsweise
+Wortfrequenzen in den Trainingsdaten und ein Mapping Wort zu Zahl. Die Werten müssen über dem gesamten Datensatz berechnet 
+werden, da diese auf jedem Worker identisch sein müssen.
+Zu einem späteren Zeitpunkt, kann dieser Schritt verteilt ausgeführt werden z.B. mittels MapReduce.
+Nun berechnet jeder Worker unabhängig von den anderen Workern für seinen Teil der Trainingsdaten Änderungen an
+den gemeinsamen Gewichten und wendet diese Änderungen an.
+Diese Änderungen werden durch Tensorflow transparent direkt auf den Parameterservern asynchron und ohne
+Locking durchgeführt. Dieser Prozess wird weiter fortgeführt bis die Fehlerrate nicht weiter verbessert wird oder
+eine festgelehnte Menge an Zeit oder Iteration verstrichen ist. Während des gesamten Trainings und am Ende des Trainings
+werden periodisch die Gewichte gespeichert. 
+
+Unsere Architektur (Worker,Parameterserver) entspricht im wesentlichen Downpour-SGD. Bei Art der 
+Paralellität handelt es sich hierbei um Datenparalellität. Modellparalellität kommt nicht zum Einsatz.
+Die Art der Grapherstellung (jeder Worker baut seinen eigenen Graph) wird Between-Graph Replication genannt.
+Der Vorteil dabei ist, dass lokal beim Worker vorhandene Trainingsdaten genutzt werden können und
+nicht von einem zentralen Client aus übertragen werden müssen.
+
+Ähnlich wie beim HOGWILD!-Algorithmus rechnen wir nicht mit Problemen durch die asynchronen und Lock-Freien Updates 
+der Gewichte, da bei jedem Trainingsschritt nur ein kleiner Teil der Gewichte modifiziert wird. 
+Dadurch sind konflikte durch gleichzeitige Updates verschiedener Worker eher selten und haben kaum negativen Einfluss.
+
+
+
+
+
 
 ## Quellen
 
