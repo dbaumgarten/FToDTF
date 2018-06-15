@@ -2,12 +2,9 @@
 import os
 import urllib
 import zipfile
-import tensorflow as tf
-import numpy as np
 import collections
 import random
 from tempfile import gettempdir
-from nltk import word_tokenize
 
 def maybe_download(url, filename, expected_bytes, unzip=True):
   """Download a file if not present, and make sure it's the right size."""
@@ -74,9 +71,13 @@ class InputProcessor():
         for word in words:
           # choose a random context word. Take special care to stay in the bounds of the list
           contextoffset = random.choice(contextoffsets)
-          if idx+contextoffset < 0 or idx+contextoffset > len(words):
+          contextindex = idx+contextoffset
+          # if selected index-offset reaches outside of the list, try the other direction
+          if idx+contextoffset < 0 or idx+contextoffset >= len(words):
             contextoffset = contextoffset*-1
-          yield (word,words[idx+contextoffset])
+            # above fails if the current line is to short. Stay inside the bounds at all cost!
+            contextindex = min(len(words)-1,max(0,idx+contextoffset))
+          yield (word,words[contextindex])
           idx += 1
 
   def _lookup_label(self,gen):
@@ -97,7 +98,10 @@ class InputProcessor():
         g = generator_func()
 
   def _batch(self,samples):
-    """ Pack self.batch_size of training samples into a batch """
+    """ Pack self.batch_size of training samples into a batch 
+        The output is a tuple of two lists, rather then a list of tuples, because this way we can treat
+        the two lists as input-tensor and label-tensor.
+        The second list is al list of one-element-lists, because tf.nce_loss wants its tensor in that shape"""
     while True:
       inputs = []
       labels = []
