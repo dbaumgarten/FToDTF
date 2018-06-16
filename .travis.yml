@@ -2,6 +2,9 @@ language: python
 python:
   - "3.6"
 install:
+  - pip install coverage python-coveralls
   - pip install .
 script:
-  - LD_LIBRARY_PATH=/usr/lib/nvidia-396 pytest
+  - LD_LIBRARY_PATH=/usr/lib/nvidia-396 coverage run --include="ftodtf/*" -m pytest
+after_success:
+  - coveralls

@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/dbaumgarten/FToDTF.svg?branch=master)](https://travis-ci.org/dbaumgarten/FToDTF)
+[![Coverage Status](https://coveralls.io/repos/github/dbaumgarten/FToDTF/badge.svg?branch=master)](https://coveralls.io/github/dbaumgarten/FToDTF?branch=master)
 # FToDTF
 
 Todo: Project description
