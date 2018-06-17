@@ -23,13 +23,11 @@
 # ==============================================================================
 
 import os
-import sys
-import random
 
 import tensorflow as tf
 import numpy as np
 
-import ftodtf.input as input
+import ftodtf.input as inp
 import ftodtf.model as model
 import ftodtf.evaluation as evaluation
 
@@ -55,11 +53,11 @@ def run(log_dir=default_logpath, steps = 100001, vocabulary_size = 50000,  batch
 
   # Download dataset if necessary
   print("Downloading dataset")
-  filename = input.maybe_download('http://mattmahoney.net/dc/','text8.zip', 31344016)
+  filename = inp.maybe_download('http://mattmahoney.net/dc/','text8.zip', 31344016)
 
   # Read the data into a list of strings.
   print("Reading dataset")
-  p = input.InputProcessor(filename,1,128,vocabulary_size)
+  p = inp.InputProcessor(filename,1,128,vocabulary_size)
   p.preprocess()
 
   reverse_dictionary = p.reversed_dict

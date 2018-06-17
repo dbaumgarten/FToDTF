@@ -1,5 +1,4 @@
 import argparse
-import sys
 
 import ftodtf.fasttext as fasttext
 
@@ -10,7 +9,7 @@ def cli_main():
         '--log_dir',
         type=str,
         help='The log directory for TensorBoard summaries.')
-    FLAGS, unparsed = parser.parse_known_args()
+    FLAGS, _ = parser.parse_known_args()
 
     #TODO: Add more arguments. See Issue #4
 

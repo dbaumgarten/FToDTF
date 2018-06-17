@@ -88,7 +88,8 @@ class InputProcessor():
       except KeyError:
         pass
 
-  def _repeat(self,generator_func):
+  @staticmethod
+  def _repeat(generator_func):
     """ Repeat a given generator forever """
     g = generator_func()
     while True:
@@ -98,7 +99,7 @@ class InputProcessor():
         g = generator_func()
 
   def _batch(self,samples):
-    """ Pack self.batch_size of training samples into a batch 
+    """ Pack self.batch_size of training samples into a batch
         The output is a tuple of two lists, rather then a list of tuples, because this way we can treat
         the two lists as input-tensor and label-tensor.
         The second list is al list of one-element-lists, because tf.nce_loss wants its tensor in that shape"""

@@ -1,6 +1,5 @@
 """ Handles all evaluation relatet tasks, like printing the nearest neighbors of a word or visualizing the generated vectors"""
 import os
-from tempfile import gettempdir
 from tensorflow.contrib.tensorboard.plugins import projector
 
 def printSimilarityCheck(similarityop,valid_examples,valid_size,reverse_dictionary):
@@ -23,7 +22,7 @@ def tensorboardVisualisation(embeddings,writer,log_dir):
   embedding_conf.metadata_path = os.path.join(log_dir, 'metadata.tsv')
   projector.visualize_embeddings(writer, config)
 
-def visualizeEmbeddings(reverse_dictionary,final_embeddings,dir):
+def visualizeEmbeddings(reverse_dictionary,final_embeddings,savedir):
   try:
     from sklearn.manifold import TSNE
     import matplotlib.pyplot as plt
@@ -49,7 +48,7 @@ def visualizeEmbeddings(reverse_dictionary,final_embeddings,dir):
     plot_only = 500
     low_dim_embs = tsne.fit_transform(final_embeddings[:plot_only, :])
     labels = [reverse_dictionary[i] for i in range(plot_only)]
-    plot_with_labels(low_dim_embs, labels, os.path.join(dir, 'tsne.png'))
+    plot_with_labels(low_dim_embs, labels, os.path.join(savedir, 'tsne.png'))
 
   except ImportError as ex:
     print('Please install sklearn, matplotlib, and scipy to show embeddings.')
