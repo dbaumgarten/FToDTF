@@ -1,5 +1,6 @@
 [![Build Status](https://travis-ci.org/dbaumgarten/FToDTF.svg?branch=master)](https://travis-ci.org/dbaumgarten/FToDTF)
 [![Coverage Status](https://coveralls.io/repos/github/dbaumgarten/FToDTF/badge.svg?branch=master)](https://coveralls.io/github/dbaumgarten/FToDTF?branch=master)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/3872f2d4f965425ea150abd921027f4c)](https://www.codacy.com/app/incognym/FToDTF?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=dbaumgarten/FToDTF&amp;utm_campaign=Badge_Grade)
 # FToDTF
 
 Todo: Project description
