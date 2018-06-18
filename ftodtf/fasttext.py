@@ -38,29 +38,29 @@ default_file_path = os.path.join(os.path.join(os.path.dirname(__file__),
                                               "data/text8"))
 
 
-# TODO: This function is way to large and has to many arguments. We should try to split this up.
 def run(log_dir=default_logpath,
         steps = 100001,
         vocabulary_size = 50000,
         batch_size = 128,
         embedding_size = 128,
         skip_window = 1,
-        num_skips = 2,
         num_sampled = 64,
         valid_size = 16,
         valid_window = 100,
         corpus_path = default_file_path):
-  """  log_dir: where to write the generated files \n
-       steps: how many training-steps should be performed \n
-       vocabulary_size: How many words the vocabulary will have. Only the vocabulary_size most frequent words will be processed. \n
-       batch_size: how many trainings-samples to process in one go \n
-       embedding_size: Dimension of the embedding vector. \n
-       skip_window: How many words to consider left and right of the target-word \n
-       num_skips: How many times to reuse an input to generate a label \n
-       num_sampled: Number of negative examples to sample \n
-       valid_size: Number of random words to use for validation \n
-       valid_window: Choose random valid_saze words from the valid_window most frequend words to use for validation \n
-       corpus: Path to the corpus/ training_data.
+  """ Run the fasttext training. ATTENTION!: The default values for the path-parameters reported by sphinx are wrong!
+      The correct defaults are listed below.
+  
+       :param str log_dir: Directory to write the generated files to. Default: <current-dir>/log
+       :param int steps: How many training steps to perform
+       :param int vocabulary_size: How many words the vocabulary will have. Only the vocabulary_size most frequent words will be processed.
+       :param int batch_size: How many trainings-samples to process per batch
+       :param int embedding_size: Dimension of the computed embedding vectors.
+       :param int skip_window: How many words to consider left and right of the target-word
+       :param int num_sampled: Number of negative examples to sample when computing the nce_loss
+       :param int valid_size: Number of random words to use for validation
+       :param int valid_window: Choose random valid_saze words from the valid_window most frequend words to use for validation
+       :param str corpus: Path to the corpus/ training_data. Default: <installdir-of-ftodtf>/data
   """
   print(log_dir)
   if not os.path.exists(log_dir):

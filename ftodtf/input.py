@@ -12,7 +12,8 @@ from nltk import ngrams
 def check_valid_path(file_path):
   """
   Checks if the given path exists.
-  :param path: The path to a file.
+
+  :param str path: The path to a file.
   :raises: FileNotFoundError
   """
   if os.path.isfile(file_path) is False:
@@ -22,8 +23,9 @@ def unarchive(file_path):
   """
   Checks if the given file is archived as tar or zips and calls the appropriate
   unarchive functions.
-  :param file_path: The path to a file.
-  :return: The path to the file after unarchiving.
+
+  :param str file_path: The path to a file.
+  :returns: The path to the file after unarchiving.
   """
   if tarfile.is_tarfile(file_path):
     print("Unpacking tar ...")
@@ -38,8 +40,9 @@ def unarchive(file_path):
 def unzip_file(file_path):
   """
   Extracts zip archive.
-  :param file_path: The path provided to the zip archive.
-  :return: The path to the extracted file.
+
+  :param str file_path: The path provided to the zip archive.
+  :returns: The path to the extracted file.
   """
   zip_ref = zipfile.ZipFile(file_path, 'r')
   zip_ref.extract(zip_ref.namelist()[0], path=gettempdir())
@@ -51,8 +54,9 @@ def unzip_file(file_path):
 def untar_file(file_path):
   """
   Extracts tar archive.
-  :param file_path: The path provided to the
-  :return: The path to the extracted file.
+
+  :param str file_path: The path provided to the
+  :returns: The path to the extracted file.
   """
   tar_ref = tarfile.open(file_path)
   tar_ref.extractall(path=gettempdir())
@@ -65,9 +69,10 @@ def untar_file(file_path):
 def generate_ngram_per_word(word, ngram_window=2):
   """
   Generates ngram strings of the specified size for a given word.
-  :param word: The token string which represents a word.
-  :param ngram_window: The size of the ngrams
-  :return: A generator which yields ngrams.
+
+  :param str word: The token string which represents a word.
+  :param int ngram_window: The size of the ngrams
+  :returns: A generator which yields ngrams.
   """
   for ngram in ngrams(word, ngram_window, pad_left=True, pad_right=True,
                       left_pad_symbol="", right_pad_symbol=""):
@@ -77,6 +82,14 @@ def generate_ngram_per_word(word, ngram_window=2):
 class InputProcessor():
   """Handles the creation of training-examble-batches from the raw training-text"""
   def __init__(self,filename,skip_window,batch_size,vocab_size):
+    """
+    Constructor of InputProcessor
+
+    :param str filename: The path+name to the file to be used as input-data
+    :param int skip_window: How many words left and right of a target word are considered as context words [skip_window][target_word][skip_window]
+    :param int batch_size: How large each Training-batch should be
+    :param int vocab_size: How large the vocabulary should be. Only the vocab_size most frequent words will be used for the vocabulary. The rest will be ignored.
+    """
     self.filename = filename
     self.skip_window = skip_window
     self.batch_size = batch_size
@@ -105,7 +118,10 @@ class InputProcessor():
           yield word
 
   def string_samples(self):
-    """ Returns a generator for samples (targetword->contextword) """
+    """ Returns a generator for samples (targetword->contextword) 
+
+    :returns: A generator yielding 2-tuple consisting of a target-word and a context word.
+    """
     # possible positions of context-words relative to a target word
     contextoffsets = [x for x in range(-self.skip_window,self.skip_window+1) if x != 0]
     with open(self.filename) as f:
@@ -125,7 +141,12 @@ class InputProcessor():
           idx += 1
 
   def _lookup_label(self,gen):
-    """ Maps the words in the input-tuple to numbers"""
+    """ Maps the words in the input-tuple to numbers.
+        Conversion is done via lookup in self.dict
+
+        :param gen: A generator yielding 2-tuples of strings
+        :returns: A generator yielding 2-tuples of ints
+    """
     for e in gen:
       try:
         yield (self.dict[e[0]],self.dict[e[1]])
@@ -134,7 +155,11 @@ class InputProcessor():
 
   @staticmethod
   def _repeat(generator_func):
-    """ Repeat a given generator forever """
+    """ Repeat a given generator forever by recreating it whenever a StopIteration Exception occurs
+
+        :param generator_func: A function without arguments returning a generator
+        :returns: A new inifinite generator
+    """
     g = generator_func()
     while True:
       try:
@@ -146,7 +171,11 @@ class InputProcessor():
     """ Pack self.batch_size of training samples into a batch
         The output is a tuple of two lists, rather then a list of tuples, because this way we can treat
         the two lists as input-tensor and label-tensor.
-        The second list is al list of one-element-lists, because tf.nce_loss wants its tensor in that shape"""
+        The second list is al list of one-element-lists, because tf.nce_loss wants its tensor in that shape
+        
+        :param samples: A generator yielding 2-tuples
+        :returns: A generator yielding 2-tuples of self.batch_size long lists. The second lists consists of 1-element-ling lists.
+        """
     while True:
       inputs = []
       labels = []

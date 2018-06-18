@@ -4,8 +4,19 @@ import math
 
 
 class Model():
+    """Builds and represents the tensorflow computation graph. Exports all important operations via fields"""
     def __init__(self,sample_generator_func,batch_size,embedding_size,vocabulary_size,valid_examples,num_sampled):
-        """Builds and returns the computation graph. The Model-Object has properties representing the inputs, the graph and the output-operations"""
+        """
+        Constuctor for Model
+
+        :param sample_generator_func: A function returning a generator yielding training-batches. See: ftodtf.input.InputProcessor.batches
+        :param int batch_size: The size the trainings-batches (obtained via sample_generator_func) will have
+        :param int embedding_size: The size of the word-embedding-vectors to generate
+        :param int vocabulary_size: How many words are in the vocabulary.
+        :param list(int) valid_examples: A list of ints each representing a word from the vocabulary. These words will be used when validating the trained model
+        :param int num_sampled: How many negative samples to draw during nce_loss calculation
+        """
+        
         self.graph = tf.Graph()
 
         with self.graph.as_default():
@@ -76,12 +87,20 @@ class Model():
             self.saver = tf.train.Saver()
 
     def save(self,session,file):
+        """Save the current session (including variable values) to a file
+
+        :param session: The current session to save
+        :type session: tf.Session
+        :param str file: The path to save to
+        :returns: The result of saver.save()
+        """
         return self.saver.save(session,file)
 
     def init(self):
         """ Initialize variables and the input iterator.
+
             Must be called before everything else.
-            Must be called inside as tf.Session
+            Must be called inside a tf.Session
         """
         self.variable_init.run()
         self.dataset_init.run()

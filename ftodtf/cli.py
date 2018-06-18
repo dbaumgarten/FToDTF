@@ -42,6 +42,7 @@ parser.add_argument('--corpus_path', type=str,
 def check_valid_input(flag, value):
     """
     This function validates the input of the user.
+    
     :param flag: The name of the hyperparameter.
     :param value: The value of the hyperparameter provided by the user.
     :return: True if the input is accurate.

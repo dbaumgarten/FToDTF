@@ -1,5 +1,3 @@
-"""ATTENTION!: When running pytest the  command "LD_LIBRARY_PATH=/usr/lib/nvidia-396 pytest" must be used.
-I have no idea why, just do it..."""
 import ftodtf.model as model
 
 def test_model():
