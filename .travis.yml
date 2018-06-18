@@ -1,12 +1,33 @@
 language: python
 python:
   - "3.6"
-install:
-  - pip install coverage python-coveralls codacy-coverage
-  - pip install .
-script:
-  - LD_LIBRARY_PATH=/usr/lib/nvidia-396 coverage run --include="ftodtf/*" -m pytest
-after_success:
-  - coveralls
-  - coverage xml
-  - python-codacy-coverage -r coverage.xml
+stages:
+  - test
+  - docs
+jobs:
+  include:
+    - stage: test
+      install:
+        - pip install coverage codacy-coverage
+        - pip install .
+      script:
+        - coverage run --include="ftodtf/*" -m pytest
+      after_success:
+        - coverage xml
+        - python-codacy-coverage -r coverage.xml
+    - stage: docs
+      install:
+        - pip install sphinx
+        - pip install .
+      script:
+        - cd docs
+        - sphinx-apidoc -o source/ ../ftodtf
+        - make html
+      deploy:
+        provider: pages
+        skip-cleanup: true
+        local-dir: docs/build/html
+        github-token: $GITHUB_TOKEN
+        keep-history: true
+        on:
+          branch: master
