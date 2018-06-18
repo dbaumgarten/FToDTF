@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 
 def find_dependencies():
-    deps = ["numpy"]
+    deps = ["numpy","nltk"]
     try:
         import tensorflow
     # Only list tensorflow as requirement if not already installed
