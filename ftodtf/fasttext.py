@@ -23,6 +23,7 @@
 # ==============================================================================
 
 import os
+import sys
 
 import tensorflow as tf
 import numpy as np
@@ -35,7 +36,17 @@ current_path = os.getcwd()
 default_logpath = os.path.join(current_path,"log")
 
 # TODO: This function is way to large and has to many arguments. We should try to split this up.
-def run(log_dir=default_logpath, steps = 100001, vocabulary_size = 50000,  batch_size = 128, embedding_size = 128, skip_window = 1, num_skips = 2, num_sampled = 64, valid_size = 16, valid_window = 100):
+def run(log_dir=default_logpath,
+        steps = 100001,
+        vocabulary_size = 50000,
+        batch_size = 128,
+        embedding_size = 128,
+        skip_window = 1,
+        num_skips = 2,
+        num_sampled = 64,
+        valid_size = 16,
+        valid_window = 100,
+        corpus_path = './data/text8'):
   """  log_dir: where to write the generated files \n
        steps: how many training-steps should be performed \n
        vocabulary_size: How many words the vocabulary will have. Only the vocabulary_size most frequent words will be processed. \n
@@ -46,14 +57,21 @@ def run(log_dir=default_logpath, steps = 100001, vocabulary_size = 50000,  batch
        num_sampled: Number of negative examples to sample \n
        valid_size: Number of random words to use for validation \n
        valid_window: Choose random valid_saze words from the valid_window most frequend words to use for validation \n
+       corpus: Path to the corpus/ training_data.
   """
   print(log_dir)
   if not os.path.exists(log_dir):
-    os.makedirs(log_dir)
+      os.makedirs(log_dir)
 
-  # Download dataset if necessary
-  print("Downloading dataset")
-  filename = inp.maybe_download('http://mattmahoney.net/dc/','text8.zip', 31344016)
+  try:
+    inp.check_valid_path(corpus_path)
+
+  except FileNotFoundError as e:
+    print(": ".join(["ERROR", e.__str__()]))
+    sys.exit(-1) # EXIT
+
+  else:
+    filename = inp.unarchive(corpus_path)
 
   # Read the data into a list of strings.
   print("Reading dataset")

@@ -2,33 +2,77 @@
 import os
 import urllib
 import zipfile
+import tarfile
 import collections
 import random
+
 from tempfile import gettempdir
+from nltk import ngrams
 
-def maybe_download(url, filename, expected_bytes, unzip=True):
-  """Download a file if not present, and make sure it's the right size."""
-  local_filename = os.path.join(gettempdir(), filename)
-  if not os.path.exists(local_filename):
-    local_filename, _ = urllib.request.urlretrieve(url + filename,
-                                                   local_filename)
-  statinfo = os.stat(local_filename)
-  if statinfo.st_size == expected_bytes:
-    print('Found and verified', filename)
+def check_valid_path(file_path):
+  """
+  Checks if the given path exists.
+  :param path: The path to a file.
+  :raises: FileNotFoundError
+  """
+  if os.path.isfile(file_path) is False:
+    raise FileNotFoundError("The specified corpus was not found!")
+
+def unarchive(file_path):
+  """
+  Checks if the given file is archived as tar or zips and calls the appropriate
+  unarchive functions.
+  :param file_path: The path to a file.
+  :return: The path to the file after unarchiving.
+  """
+  if tarfile.is_tarfile(file_path):
+    print("Unpacking tar ...")
+    return untar_file(file_path)
+  elif zipfile.is_zipfile(file_path):
+    print("Unpacking zip ...")
+    return unzip_file(file_path)
   else:
-    print(statinfo.st_size)
-    raise Exception('Failed to verify ' + local_filename +
-                    '. Can you get to it with a browser?')
+    return file_path
 
-  if unzip:
-    zip_ref = zipfile.ZipFile(local_filename, 'r')
-    local_filename = os.path.join(gettempdir(),zip_ref.namelist()[0])
-    if not os.path.exists(local_filename):
-      print("Unpacking file...")
-      zip_ref.extract(zip_ref.namelist()[0],path=gettempdir())
-    zip_ref.close()
 
-  return local_filename
+def unzip_file(file_path):
+  """
+  Extracts zip archive.
+  :param file_path: The path provided to the zip archive.
+  :return: The path to the extracted file.
+  """
+  zip_ref = zipfile.ZipFile(file_path, 'r')
+  zip_ref.extract(zip_ref.namelist()[0], path=gettempdir())
+  file_name = os.path.join(gettempdir(), zip_ref.namelist()[0])
+  zip_ref.close()
+  return file_name
+
+
+def untar_file(file_path):
+  """
+  Extracts tar archive.
+  :param file_path: The path provided to the
+  :return: The path to the extracted file.
+  """
+  tar_ref = tarfile.open(file_path)
+  tar_ref.extractall(path=gettempdir())
+  file_name = os.path.join(gettempdir(), tar_ref.getnames()[0])
+  print(file_name)
+  tar_ref.close()
+  return file_name
+
+
+def generate_ngram_per_word(word, ngram_window=2):
+  """
+  Generates ngram strings of the specified size for a given word.
+  :param word: The token string which represents a word.
+  :param ngram_window: The size of the ngrams
+  :return: A generator which yields ngrams.
+  """
+  for ngram in ngrams(word, ngram_window, pad_left=True, pad_right=True,
+                      left_pad_symbol="", right_pad_symbol=""):
+    yield "".join([*ngram])
+
 
 class InputProcessor():
   """Handles the creation of training-examble-batches from the raw training-text"""
