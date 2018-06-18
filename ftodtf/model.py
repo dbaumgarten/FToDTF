@@ -4,16 +4,23 @@ import math
 
 
 class Model():
-    def __init__(self,batch_size,embedding_size,vocabulary_size,valid_examples,num_sampled):
+    def __init__(self,sample_generator_func,batch_size,embedding_size,vocabulary_size,valid_examples,num_sampled):
         """Builds and returns the computation graph. The Model-Object has properties representing the inputs, the graph and the output-operations"""
         self.graph = tf.Graph()
 
         with self.graph.as_default():
 
+            #create a dataset pipeline from the given sample-generator
+            inputpipe = tf.data.Dataset.from_generator(sample_generator_func,output_types=(tf.int32,tf.int32),output_shapes=([batch_size],[batch_size,1]))
+            inputpipe = inputpipe.prefetch(1)
+            iter = inputpipe.make_initializable_iterator()
+            self.dataset_init = iter.initializer
+            batch = iter.get_next()
+
             # Input data.
             with tf.name_scope('inputs'):
-                self.train_inputs = tf.placeholder(tf.int32, shape=[batch_size])
-                self.train_labels = tf.placeholder(tf.int32, shape=[batch_size,1])
+                self.train_inputs = batch[0]
+                self.train_labels = batch[1]
                 valid_dataset = tf.constant(valid_examples, dtype=tf.int32)
 
             # Ops and variables pinned to the CPU because of missing GPU implementation
@@ -63,10 +70,18 @@ class Model():
             self.merged = tf.summary.merge_all()
 
             # Add variable initializer.
-            self.init = tf.global_variables_initializer()
+            self.variable_init = tf.global_variables_initializer()
 
             # Create a saver.
             self.saver = tf.train.Saver()
 
     def save(self,session,file):
         return self.saver.save(session,file)
+
+    def init(self):
+        """ Initialize variables and the input iterator.
+            Must be called before everything else.
+            Must be called inside as tf.Session
+        """
+        self.variable_init.run()
+        self.dataset_init.run()

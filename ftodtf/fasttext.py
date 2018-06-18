@@ -92,22 +92,19 @@ def run(log_dir=default_logpath,
   valid_examples = np.random.choice(valid_window, valid_size, replace=False)
 
   # Get the computation-graph and the associated operations
-  m = model.Model(batch_size,embedding_size,vocabulary_size,valid_examples,num_sampled)
+  m = model.Model(p.batches,batch_size,embedding_size,vocabulary_size,valid_examples,num_sampled)
 
 
   with tf.Session(graph=m.graph) as session:
     # Open a writer to write summaries.
     writer = tf.summary.FileWriter(log_dir, session.graph)
 
-    # We must initialize all variables before we use them.
-    m.init.run()
+    # We must initialize the model before it can be used
+    m.init()
     print('Initialized')
-    batches = p.batches()
 
     average_loss = 0
     for step in range(steps):
-      batch_inputs, batch_labels = batches.__next__()
-      feed_dict = {m.train_inputs: batch_inputs, m.train_labels: batch_labels}
 
       # Define metadata variable.
       run_metadata = tf.RunMetadata()
@@ -118,7 +115,6 @@ def run(log_dir=default_logpath,
       # Feed metadata variable to session for visualizing the graph in TensorBoard.
       _, summary, loss_val = session.run(
           [m.optimizer,m.merged,m.loss],
-          feed_dict=feed_dict,
           run_metadata=run_metadata)
       average_loss += loss_val
 
