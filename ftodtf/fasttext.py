@@ -34,6 +34,9 @@ import ftodtf.evaluation as evaluation
 
 current_path = os.getcwd()
 default_logpath = os.path.join(current_path,"log")
+default_file_path = os.path.join(os.path.join(os.path.dirname(__file__),
+                                              "data/text8"))
+
 
 # TODO: This function is way to large and has to many arguments. We should try to split this up.
 def run(log_dir=default_logpath,
@@ -46,7 +49,7 @@ def run(log_dir=default_logpath,
         num_sampled = 64,
         valid_size = 16,
         valid_window = 100,
-        corpus_path = './data/text8'):
+        corpus_path = default_file_path):
   """  log_dir: where to write the generated files \n
        steps: how many training-steps should be performed \n
        vocabulary_size: How many words the vocabulary will have. Only the vocabulary_size most frequent words will be processed. \n
@@ -63,6 +66,7 @@ def run(log_dir=default_logpath,
   if not os.path.exists(log_dir):
       os.makedirs(log_dir)
 
+  print(corpus_path)
   try:
     inp.check_valid_path(corpus_path)
 
