@@ -16,7 +16,6 @@ class Model():
         :param list(int) valid_examples: A list of ints each representing a word from the vocabulary. These words will be used when validating the trained model
         :param int num_sampled: How many negative samples to draw during nce_loss calculation
         """
-        
         self.graph = tf.Graph()
 
         with self.graph.as_default():
@@ -24,9 +23,9 @@ class Model():
             #create a dataset pipeline from the given sample-generator
             inputpipe = tf.data.Dataset.from_generator(sample_generator_func,output_types=(tf.int32,tf.int32),output_shapes=([batch_size],[batch_size,1]))
             inputpipe = inputpipe.prefetch(1)
-            iter = inputpipe.make_initializable_iterator()
-            self.dataset_init = iter.initializer
-            batch = iter.get_next()
+            iterator = inputpipe.make_initializable_iterator()
+            self.dataset_init = iterator.initializer
+            batch = iterator.get_next()
 
             # Input data.
             with tf.name_scope('inputs'):

@@ -118,7 +118,7 @@ class InputProcessor():
           yield word
 
   def string_samples(self):
-    """ Returns a generator for samples (targetword->contextword) 
+    """ Returns a generator for samples (targetword->contextword)
 
     :returns: A generator yielding 2-tuple consisting of a target-word and a context word.
     """
@@ -172,7 +172,7 @@ class InputProcessor():
         The output is a tuple of two lists, rather then a list of tuples, because this way we can treat
         the two lists as input-tensor and label-tensor.
         The second list is al list of one-element-lists, because tf.nce_loss wants its tensor in that shape
-        
+
         :param samples: A generator yielding 2-tuples
         :returns: A generator yielding 2-tuples of self.batch_size long lists. The second lists consists of 1-element-ling lists.
         """

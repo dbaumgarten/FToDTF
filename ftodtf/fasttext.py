@@ -50,7 +50,7 @@ def run(log_dir=default_logpath,
         corpus_path = default_file_path):
   """ Run the fasttext training. ATTENTION!: The default values for the path-parameters reported by sphinx are wrong!
       The correct defaults are listed below.
-  
+
        :param str log_dir: Directory to write the generated files to. Default: <current-dir>/log
        :param int steps: How many training steps to perform
        :param int vocabulary_size: How many words the vocabulary will have. Only the vocabulary_size most frequent words will be processed.
