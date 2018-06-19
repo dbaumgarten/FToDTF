@@ -37,18 +37,18 @@ default_logpath = os.path.join(current_path,"log")
 
 
 def run(corpus_path, log_dir=default_logpath,
-        steps = 100001,
-        vocabulary_size = 50000,
-        batch_size = 128,
-        embedding_size = 128,
-        skip_window = 1,
-        num_sampled = 64,
-        valid_size = 16,
-        valid_window = 100):
+        steps=100001,
+        vocabulary_size=50000,
+        batch_size=128,
+        embedding_size=128,
+        skip_window=1,
+        num_sampled=64,
+        valid_size=16,
+        valid_window=100):
   """ Run the fasttext training. ATTENTION!: The default values for the log_dir reported by sphinx are wrong!
       The correct default is listed below.
 
-       :param str corpus: Path to the corpus/ training_data.
+       :param str corpus_path: Path to the corpus/ training_data.
        :param str log_dir: Directory to write the generated files to. Default: <current-dir>/log
        :param int steps: How many training steps to perform
        :param int vocabulary_size: How many words the vocabulary will have. Only the vocabulary_size most frequent words will be processed.
@@ -57,7 +57,7 @@ def run(corpus_path, log_dir=default_logpath,
        :param int skip_window: How many words to consider left and right of the target-word
        :param int num_sampled: Number of negative examples to sample when computing the nce_loss
        :param int valid_size: Number of random words to use for validation
-       :param int valid_window: Choose random valid_saze words from the valid_window most frequend words to use for validation
+       :param int valid_window: Choose random valid_size words from the valid_window most frequent words to use for validation
   """
   print(log_dir)
   if not os.path.exists(log_dir):
