@@ -1,5 +1,5 @@
 import argparse
-import ftodtf.fasttext as fasttext
+import ftodtf.training
 
 # TODO: Move this all to a config file!
 parser = argparse.ArgumentParser(description="Parse the hyperparameters for \
@@ -38,6 +38,10 @@ parser.add_argument('--corpus_path', type=str,
                     help='Path to the corpus/training_data.',
                     required=True)
 
+parser.add_argument('--validation_words', type=str,
+                    help='A comma seperated list of words to regularily compute similaritys of to check the training-progress',
+                    required=True)            
+
 
 # TODO: Check for valid input of the user!
 def check_valid_input(flag, value):
@@ -72,6 +76,8 @@ def check_valid_input(flag, value):
             pass
         elif flag is 'corpus_path':
             pass
+        elif flag is 'validation_words':
+            pass
 
         return True
 
@@ -87,7 +93,11 @@ def cli_main():
     except ValueError as e:
         print(": ".join(["ERROR", e]))
     else:
-        fasttext.run(**hyperparameter_values)
+        if "validation_words" in hyperparameter_values:
+            hyperparameter_values["validation_words"] = hyperparameter_values["validation_words"].split(",")
+
+
+        ftodtf.training.train(**hyperparameter_values)
 
 
 if __name__ == "__main__":
