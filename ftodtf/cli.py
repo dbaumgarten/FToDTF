@@ -1,5 +1,5 @@
 import argparse
-import ftodtf.fasttext as fasttext
+import ftodtf.training
 
 parser = argparse.ArgumentParser(description="Parse the hyperparameters for \
                                              the distributed FastText model.")
@@ -32,6 +32,10 @@ parser.add_argument('-W', '--valid_window', type=int,
 
 parser.add_argument('-c', '--corpus_path', type=str, required=True,
                     help='Path to the corpus/training data.')
+
+parser.add_argument('-x','--validation_words', type=str,
+                    help='A comma seperated list of words to regularily compute similaritys of to check the training-progress',
+                    required=True)            
 
 
 # TODO: Check for valid input of the user!
@@ -68,6 +72,8 @@ def check_valid_input(flag, value):
             pass
         elif flag is 'corpus_path':
             pass
+        elif flag is 'validation_words':
+            pass
 
         return True
 
@@ -83,7 +89,11 @@ def cli_main():
     except ValueError as e:
         print(": ".join(["ERROR", e]))
     else:
-        fasttext.run(**hyperparameter_values)
+        if "validation_words" in hyperparameter_values:
+            hyperparameter_values["validation_words"] = hyperparameter_values["validation_words"].split(",")
+
+
+        ftodtf.training.train(**hyperparameter_values)
 
 
 if __name__ == "__main__":

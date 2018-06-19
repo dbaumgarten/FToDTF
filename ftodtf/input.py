@@ -1,6 +1,5 @@
 """This module handles all the input-relatet tasks like loading, pre-processing and batching"""
 import os
-import urllib
 import zipfile
 import tarfile
 import collections
@@ -69,19 +68,34 @@ def untar_file(file_path):
 def generate_ngram_per_word(word, ngram_window=2):
   """
   Generates ngram strings of the specified size for a given word.
+  Before processing beginning and end of the word will be marked with "*".
+  The ngrams will also include the full word (including the added *s).
+  This is the same process as described in the fasttext paper.
 
   :param str word: The token string which represents a word.
   :param int ngram_window: The size of the ngrams
   :returns: A generator which yields ngrams.
   """
-  for ngram in ngrams(word, ngram_window, pad_left=True, pad_right=True,
-                      left_pad_symbol="", right_pad_symbol=""):
-    yield "".join([*ngram])
+  word = "*"+word+"*"
+  ngs = ngrams(word, ngram_window)
+  ngstrings = ["".join(x) for x in ngs]
+  ngstrings.append(word)
+  return ngstrings
+
+def pad_to_length(li,length,pad=""):
+  """ Pads a given list to a given length with a given padding-element
+
+  :param list() li: The list to be padded
+  :param int length: The length to pad the list to
+  :param object pad: The element to add to the list until the desired length is reached
+  """
+  li += [pad]*(length-len(li))
+  return li
 
 
 class InputProcessor():
   """Handles the creation of training-examble-batches from the raw training-text"""
-  def __init__(self,filename,skip_window,batch_size,vocab_size):
+  def __init__(self,filename,skip_window,batch_size,vocab_size,ngram_size):
     """
     Constructor of InputProcessor
 
@@ -94,6 +108,7 @@ class InputProcessor():
     self.skip_window = skip_window
     self.batch_size = batch_size
     self.vocab_size = vocab_size
+    self.ngram_size = ngram_size
 
   def preprocess(self):
     """ Do the needed proprocessing of the dataset. Count word frequencies, create a mapping word->int"""
@@ -141,15 +156,15 @@ class InputProcessor():
           idx += 1
 
   def _lookup_label(self,gen):
-    """ Maps the words in the input-tuple to numbers.
+    """ Maps the second words in the input-tuple to numbers.
         Conversion is done via lookup in self.dict
 
         :param gen: A generator yielding 2-tuples of strings
-        :returns: A generator yielding 2-tuples of ints
+        :returns: A generator yielding 2-tuples (string,int)
     """
     for e in gen:
       try:
-        yield (self.dict[e[0]],self.dict[e[1]])
+        yield (e[0],self.dict[e[1]])
       except KeyError:
         pass
 
@@ -185,6 +200,31 @@ class InputProcessor():
         labels.append([sample[1]])
       yield inputs,labels
 
+  def _ngrammize(self,gen):
+    """ Transforms the first entry (a string) of the tuples received from the generator gen into a list of ngrams
+
+    :param gen: A generator yielding tuples (str,?)
+    :returns: A generator yielding tuples (list(str),?)
+    """
+    for entry in gen:
+      yield (generate_ngram_per_word(entry[0],self.ngram_size),entry[1])
+
+  @staticmethod
+  def _equalize_batch(gen):
+    """ Makes sure all n-gram arrays of a batch have the same length. 
+    
+    :param gen: The generator to retrieve the batches from
+    :returns: A generator yielding batches with equal-length ngram-lists
+    """
+    for batch in gen:
+      longest = 0
+      for ngs in batch[0]:
+        longest = max(longest,len(ngs))
+      for i in range(len(batch[0])):
+        batch[0][i] = pad_to_length(batch[0][i],longest)
+      yield batch
+
+
   def batches(self):
     """ Returns a generator the will yield an infinite amout of training-batches ready to feed into the model"""
-    return self._batch(self._lookup_label(self._repeat(self.string_samples)))
+    return self._equalize_batch(self._batch(self._ngrammize(self._lookup_label(self._repeat(self.string_samples)))))

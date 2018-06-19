@@ -1,4 +1,4 @@
-import ftodtf.fasttext as ft
+import ftodtf.training as ft
 import pytest
 from tempfile import tempdir
 from os.path import join
@@ -15,4 +15,4 @@ def test_fasttext():
     """run a single iteration just to check if it throws any errors. To skip this slow test run the test usering pytest -m 'not full' """
     with open(join(tempdir,"testdatafile"),"w") as f:
         f.write(testdata)
-    ft.run(corpus_path=join(tempdir,"testdatafile"),steps=1,valid_window=10,valid_size=3,vocabulary_size=20,num_sampled=3)
+    ft.train(corpus_path=join(tempdir,"testdatafile"),steps=1,vocabulary_size=20,num_sampled=3,validation_words=["one","two","king","kingdom"])

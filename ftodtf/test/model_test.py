@@ -7,7 +7,7 @@ def test_model():
         return [(x,[x]) for x in range(1,128)]
 
 
-    m = model.Model(batches,128,300,50000,[1,2,3,4],16)
+    m = model.Model(batches,128,300,50000,["one","two","king","kingdom"],16,10000)
     assert m
     assert m.loss is not None
     assert m.merged is not None

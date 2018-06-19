@@ -17,7 +17,7 @@
 #
 #
 # ATTENTION: the original file (found at https://github.com/tensorflow/tensorflow/blob/r1.8/tensorflow/examples/tutorials/word2vec/word2vec_basic.py)
-# has been modified by the FToDTF Authors!
+# has been completely modified by the FToDTF Authors!
 #
 #
 # ==============================================================================
@@ -30,21 +30,22 @@ import numpy as np
 
 import ftodtf.input as inp
 import ftodtf.model as model
-import ftodtf.evaluation as evaluation
+import ftodtf.validation
 
 current_path = os.getcwd()
 default_logpath = os.path.join(current_path,"log")
 
 
-def run(corpus_path, log_dir=default_logpath,
-        steps=100001,
-        vocabulary_size=50000,
-        batch_size=128,
-        embedding_size=128,
-        skip_window=1,
-        num_sampled=64,
-        valid_size=16,
-        valid_window=100):
+def train(corpus_path, log_dir=default_logpath,
+        steps = 100001,
+        vocabulary_size = 50000,
+        batch_size = 128,
+        embedding_size = 128,
+        skip_window = 1,
+        num_sampled = 64,
+        ngram_size = 3,
+        num_buckets = 100000,
+        validation_words = None):
   """ Run the fasttext training. ATTENTION!: The default values for the log_dir reported by sphinx are wrong!
       The correct default is listed below.
 
@@ -56,8 +57,9 @@ def run(corpus_path, log_dir=default_logpath,
        :param int embedding_size: Dimension of the computed embedding vectors.
        :param int skip_window: How many words to consider left and right of the target-word
        :param int num_sampled: Number of negative examples to sample when computing the nce_loss
-       :param int valid_size: Number of random words to use for validation
-       :param int valid_window: Choose random valid_size words from the valid_window most frequent words to use for validation
+       :param int ngram_size: How large the ngrams (in which the target words are split) should be
+       :param int num_buckets: How many hash-buckets to use when hashing the ngrams to numbers
+       :param list(str) validation_words: A list of words. The similarity of these words to each other will be regularily computed to indicade the training-progress
   """
   print(log_dir)
   if not os.path.exists(log_dir):
@@ -75,22 +77,11 @@ def run(corpus_path, log_dir=default_logpath,
 
   # Read the data into a list of strings.
   print("Reading dataset")
-  p = inp.InputProcessor(filename,1,128,vocabulary_size)
+  p = inp.InputProcessor(filename,skip_window,batch_size,vocabulary_size,ngram_size)
   p.preprocess()
 
-  reverse_dictionary = p.reversed_dict
-  # Step 4: Build and train a skip-gram model.
-
-  # We pick a random validation set to sample nearest neighbors. Here we limit the
-  # validation samples to the words that have a low numeric ID, which by
-  # construction are also the most frequent. These 3 variables are used only for
-  # displaying model accuracy, they don't affect calculation.
-  # pylint: disable=no-member
-  valid_examples = np.random.choice(valid_window, valid_size, replace=False)
-
   # Get the computation-graph and the associated operations
-  m = model.Model(p.batches,batch_size,embedding_size,vocabulary_size,valid_examples,num_sampled)
-
+  m = model.Model(p.batches,batch_size,embedding_size,vocabulary_size,validation_words,num_sampled,num_buckets)
 
   with tf.Session(graph=m.graph) as session:
     # Open a writer to write summaries.
@@ -129,23 +120,11 @@ def run(corpus_path, log_dir=default_logpath,
         average_loss = 0
 
       # Note that this is expensive (~20% slowdown if computed every 500 steps)
-      if step % 10000 == 0:
-        evaluation.printSimilarityCheck(m.similarity,valid_examples,valid_size,reverse_dictionary)
-
-    final_embeddings = m.normalized_embeddings.eval()
-
-    # Write corresponding labels for the embeddings.
-    with open(log_dir + '/metadata.tsv', 'w') as f:
-      for i in range(vocabulary_size):
-        f.write(reverse_dictionary[i] + '\n')
+      if step % 10000 == 0 and validation_words:
+        ftodtf.validation.printSimilarityCheck(m.similarity,validation_words,p.reversed_dict)
 
     # Save the model for checkpoints.
     m.save(session, os.path.join(log_dir, 'model.ckpt'))
 
-    # Create a configuration for visualizing embeddings with the labels in TensorBoard.
-    evaluation.tensorboardVisualisation(m.embeddings,writer,log_dir)
 
   writer.close()
-
-  # Step 6: Visualize the embeddings.
-  evaluation.visualizeEmbeddings(reverse_dictionary,final_embeddings,log_dir)
