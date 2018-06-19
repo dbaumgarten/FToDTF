@@ -12,22 +12,6 @@ ftodtf.cli module
     :undoc-members:
     :show-inheritance:
 
-ftodtf.evaluation module
-------------------------
-
-.. automodule:: ftodtf.evaluation
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-ftodtf.fasttext module
-----------------------
-
-.. automodule:: ftodtf.fasttext
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
 ftodtf.input module
 -------------------
 
@@ -40,6 +24,22 @@ ftodtf.model module
 -------------------
 
 .. automodule:: ftodtf.model
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+ftodtf.training module
+----------------------
+
+.. automodule:: ftodtf.training
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+ftodtf.validation module
+------------------------
+
+.. automodule:: ftodtf.validation
     :members:
     :undoc-members:
     :show-inheritance:

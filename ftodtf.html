@@ -69,92 +69,12 @@
 </dd></dl>
 
 </div>
-<div class="section" id="module-ftodtf.evaluation">
-<span id="ftodtf-evaluation-module"></span><h2>ftodtf.evaluation module<a class="headerlink" href="#module-ftodtf.evaluation" title="Permalink to this headline">¶</a></h2>
-<p>Handles all evaluation relatet tasks, like printing the nearest neighbors of a word or visualizing the generated vectors</p>
-<dl class="function">
-<dt id="ftodtf.evaluation.printSimilarityCheck">
-<code class="descclassname">ftodtf.evaluation.</code><code class="descname">printSimilarityCheck</code><span class="sig-paren">(</span><em>similarityop</em>, <em>valid_examples</em>, <em>valid_size</em>, <em>reverse_dictionary</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.evaluation.printSimilarityCheck" title="Permalink to this definition">¶</a></dt>
-<dd><p>Print the most similar words for given reference-words
-:param similarityop: The tensorflow operation returning the computed similarity
-:param list(int) valid_examples: Words to print he similarity for
-:param valid_size: Length of valid_examples
-:param reverse_dictionary: A dict mapping ints (like in valid_examples) to their corresponding words</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="ftodtf.evaluation.tensorboardVisualisation">
-<code class="descclassname">ftodtf.evaluation.</code><code class="descname">tensorboardVisualisation</code><span class="sig-paren">(</span><em>embeddings</em>, <em>writer</em>, <em>log_dir</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.evaluation.tensorboardVisualisation" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a tensorboard visualisation for the generated vectors
-:param tf.Variable embeddings: The calculated vectors
-:param writer: The writer to write the data to
-:param str log_dir: The directory where to store the generated files</p>
-</dd></dl>
-
-<dl class="function">
-<dt id="ftodtf.evaluation.visualizeEmbeddings">
-<code class="descclassname">ftodtf.evaluation.</code><code class="descname">visualizeEmbeddings</code><span class="sig-paren">(</span><em>reverse_dictionary</em>, <em>final_embeddings</em>, <em>savedir</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.evaluation.visualizeEmbeddings" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate a picture of the computed vectors
-:param tf.Variable final_embeddings: The calculated vectors
-:param str savedir: The directory where to store the generated files
-:param reverse_dictionary: A dict mapping ints to their corresponding words</p>
-</dd></dl>
-
-</div>
-<div class="section" id="module-ftodtf.fasttext">
-<span id="ftodtf-fasttext-module"></span><h2>ftodtf.fasttext module<a class="headerlink" href="#module-ftodtf.fasttext" title="Permalink to this headline">¶</a></h2>
-<dl class="function">
-<dt id="ftodtf.fasttext.run">
-<code class="descclassname">ftodtf.fasttext.</code><code class="descname">run</code><span class="sig-paren">(</span><em>corpus_path</em>, <em>log_dir='/home/travis/build/dbaumgarten/FToDTF/docs/log'</em>, <em>steps=100001</em>, <em>vocabulary_size=50000</em>, <em>batch_size=128</em>, <em>embedding_size=128</em>, <em>skip_window=1</em>, <em>num_sampled=64</em>, <em>valid_size=16</em>, <em>valid_window=100</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.fasttext.run" title="Permalink to this definition">¶</a></dt>
-<dd><p>Run the fasttext training. ATTENTION!: The default values for the log_dir reported by sphinx are wrong!
-The correct default is listed below.</p>
-<blockquote>
-<div><table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name" colspan="2">param str corpus_path:</th></tr>
-<tr class="field-odd field"><td>&#160;</td><td class="field-body">Path to the corpus/ training_data.</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">param str log_dir:</th></tr>
-<tr class="field-even field"><td>&#160;</td><td class="field-body">Directory to write the generated files to. Default: &lt;current-dir&gt;/log</td>
-</tr>
-<tr class="field-odd field"><th class="field-name" colspan="2">param int steps:</th></tr>
-<tr class="field-odd field"><td>&#160;</td><td class="field-body">How many training steps to perform</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">param int vocabulary_size:</th></tr>
-<tr class="field-even field"><td>&#160;</td><td class="field-body">How many words the vocabulary will have. Only the vocabulary_size most frequent words will be processed.</td>
-</tr>
-<tr class="field-odd field"><th class="field-name" colspan="2">param int batch_size:</th></tr>
-<tr class="field-odd field"><td>&#160;</td><td class="field-body">How many trainings-samples to process per batch</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">param int embedding_size:</th></tr>
-<tr class="field-even field"><td>&#160;</td><td class="field-body">Dimension of the computed embedding vectors.</td>
-</tr>
-<tr class="field-odd field"><th class="field-name" colspan="2">param int skip_window:</th></tr>
-<tr class="field-odd field"><td>&#160;</td><td class="field-body">How many words to consider left and right of the target-word</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">param int num_sampled:</th></tr>
-<tr class="field-even field"><td>&#160;</td><td class="field-body">Number of negative examples to sample when computing the nce_loss</td>
-</tr>
-<tr class="field-odd field"><th class="field-name" colspan="2">param int valid_size:</th></tr>
-<tr class="field-odd field"><td>&#160;</td><td class="field-body">Number of random words to use for validation</td>
-</tr>
-<tr class="field-even field"><th class="field-name" colspan="2">param int valid_window:</th></tr>
-<tr class="field-even field"><td>&#160;</td><td class="field-body">Choose random valid_size words from the valid_window most frequent words to use for validation</td>
-</tr>
-</tbody>
-</table>
-</div></blockquote>
-</dd></dl>
-
-</div>
 <div class="section" id="module-ftodtf.input">
 <span id="ftodtf-input-module"></span><h2>ftodtf.input module<a class="headerlink" href="#module-ftodtf.input" title="Permalink to this headline">¶</a></h2>
 <p>This module handles all the input-relatet tasks like loading, pre-processing and batching</p>
 <dl class="class">
 <dt id="ftodtf.input.InputProcessor">
-<em class="property">class </em><code class="descclassname">ftodtf.input.</code><code class="descname">InputProcessor</code><span class="sig-paren">(</span><em>filename</em>, <em>skip_window</em>, <em>batch_size</em>, <em>vocab_size</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.input.InputProcessor" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">ftodtf.input.</code><code class="descname">InputProcessor</code><span class="sig-paren">(</span><em>filename</em>, <em>skip_window</em>, <em>batch_size</em>, <em>vocab_size</em>, <em>ngram_size</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.input.InputProcessor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Handles the creation of training-examble-batches from the raw training-text</p>
 <p>Constructor of InputProcessor</p>
@@ -219,7 +139,10 @@ The correct default is listed below.</p>
 <dl class="function">
 <dt id="ftodtf.input.generate_ngram_per_word">
 <code class="descclassname">ftodtf.input.</code><code class="descname">generate_ngram_per_word</code><span class="sig-paren">(</span><em>word</em>, <em>ngram_window=2</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.input.generate_ngram_per_word" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generates ngram strings of the specified size for a given word.</p>
+<dd><p>Generates ngram strings of the specified size for a given word.
+Before processing beginning and end of the word will be marked with “*”.
+The ngrams will also include the full word (including the added <a href="#id1"><span class="problematic" id="id2">*</span></a>s).
+This is the same process as described in the fasttext paper.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -231,6 +154,25 @@ The correct default is listed below.</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A generator which yields ngrams.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="ftodtf.input.pad_to_length">
+<code class="descclassname">ftodtf.input.</code><code class="descname">pad_to_length</code><span class="sig-paren">(</span><em>li</em>, <em>length</em>, <em>pad=''</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.input.pad_to_length" title="Permalink to this definition">¶</a></dt>
+<dd><p>Pads a given list to a given length with a given padding-element</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>li</strong> (<em>list</em><em>(</em><em>)</em>) – The list to be padded</li>
+<li><strong>length</strong> (<em>int</em>) – The length to pad the list to</li>
+<li><strong>pad</strong> (<em>object</em>) – The element to add to the list until the desired length is reached</li>
+</ul>
 </td>
 </tr>
 </tbody>
@@ -292,7 +234,7 @@ unarchive functions.</p>
 <p>This module handles the building of the tf execution graph</p>
 <dl class="class">
 <dt id="ftodtf.model.Model">
-<em class="property">class </em><code class="descclassname">ftodtf.model.</code><code class="descname">Model</code><span class="sig-paren">(</span><em>sample_generator_func</em>, <em>batch_size</em>, <em>embedding_size</em>, <em>vocabulary_size</em>, <em>valid_examples</em>, <em>num_sampled</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.model.Model" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">ftodtf.model.</code><code class="descname">Model</code><span class="sig-paren">(</span><em>sample_generator_func</em>, <em>batch_size</em>, <em>embedding_size</em>, <em>vocabulary_size</em>, <em>validation_words</em>, <em>num_sampled</em>, <em>num_buckets</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.model.Model" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Builds and represents the tensorflow computation graph. Exports all important operations via fields</p>
 <p>Constuctor for Model</p>
@@ -305,7 +247,7 @@ unarchive functions.</p>
 <li><strong>batch_size</strong> (<em>int</em>) – The size the trainings-batches (obtained via sample_generator_func) will have</li>
 <li><strong>embedding_size</strong> (<em>int</em>) – The size of the word-embedding-vectors to generate</li>
 <li><strong>vocabulary_size</strong> (<em>int</em>) – How many words are in the vocabulary.</li>
-<li><strong>valid_examples</strong> (<em>list</em><em>(</em><em>int</em><em>)</em>) – A list of ints each representing a word from the vocabulary. These words will be used when validating the trained model</li>
+<li><strong>validation_words</strong> (<em>list</em><em>(</em><em>str</em><em>)</em>) – A list of words. The similarity between these words can than be computed using the self.similarity operation.</li>
 <li><strong>num_sampled</strong> (<em>int</em>) – How many negative samples to draw during nce_loss calculation</li>
 </ul>
 </td>
@@ -344,6 +286,70 @@ Must be called inside a tf.Session</p>
 </dd></dl>
 
 </div>
+<div class="section" id="module-ftodtf.training">
+<span id="ftodtf-training-module"></span><h2>ftodtf.training module<a class="headerlink" href="#module-ftodtf.training" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="ftodtf.training.train">
+<code class="descclassname">ftodtf.training.</code><code class="descname">train</code><span class="sig-paren">(</span><em>corpus_path</em>, <em>log_dir='/home/travis/build/dbaumgarten/FToDTF/docs/log'</em>, <em>steps=100001</em>, <em>vocabulary_size=50000</em>, <em>batch_size=128</em>, <em>embedding_size=128</em>, <em>skip_window=1</em>, <em>num_sampled=64</em>, <em>ngram_size=3</em>, <em>num_buckets=100000</em>, <em>validation_words=None</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.training.train" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run the fasttext training. ATTENTION!: The default values for the log_dir reported by sphinx are wrong!
+The correct default is listed below.</p>
+<blockquote>
+<div><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">param str corpus_path:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">Path to the corpus/ training_data.</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">param str log_dir:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">Directory to write the generated files to. Default: &lt;current-dir&gt;/log</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">param int steps:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">How many training steps to perform</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">param int vocabulary_size:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">How many words the vocabulary will have. Only the vocabulary_size most frequent words will be processed.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">param int batch_size:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">How many trainings-samples to process per batch</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">param int embedding_size:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">Dimension of the computed embedding vectors.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">param int skip_window:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">How many words to consider left and right of the target-word</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">param int num_sampled:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">Number of negative examples to sample when computing the nce_loss</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">param int ngram_size:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">How large the ngrams (in which the target words are split) should be</td>
+</tr>
+<tr class="field-even field"><th class="field-name" colspan="2">param int num_buckets:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">How many hash-buckets to use when hashing the ngrams to numbers</td>
+</tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">param list(str) validation_words:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">A list of words. The similarity of these words to each other will be regularily computed to indicade the training-progress</td>
+</tr>
+</tbody>
+</table>
+</div></blockquote>
+</dd></dl>
+
+</div>
+<div class="section" id="module-ftodtf.validation">
+<span id="ftodtf-validation-module"></span><h2>ftodtf.validation module<a class="headerlink" href="#module-ftodtf.validation" title="Permalink to this headline">¶</a></h2>
+<p>Handles all evaluation relatet tasks, like printing the nearest neighbors of a word or visualizing the generated vectors</p>
+<dl class="function">
+<dt id="ftodtf.validation.printSimilarityCheck">
+<code class="descclassname">ftodtf.validation.</code><code class="descname">printSimilarityCheck</code><span class="sig-paren">(</span><em>similarityop</em>, <em>words</em>, <em>reverse_dictionary</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.validation.printSimilarityCheck" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print similarity between given words
+:param similarityop: The tensorflow operation returning the computed similarity
+:param list(str) words: Words to print he similarity for
+:param reverse_dictionary: A dict mapping ints (like in words) to their corresponding words</p>
+</dd></dl>
+
+</div>
 <div class="section" id="module-ftodtf">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-ftodtf" title="Permalink to this headline">¶</a></h2>
 </div>
@@ -361,10 +367,10 @@ Must be called inside a tf.Session</p>
 <li><a class="reference internal" href="#">ftodtf package</a><ul>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
 <li><a class="reference internal" href="#module-ftodtf.cli">ftodtf.cli module</a></li>
-<li><a class="reference internal" href="#module-ftodtf.evaluation">ftodtf.evaluation module</a></li>
-<li><a class="reference internal" href="#module-ftodtf.fasttext">ftodtf.fasttext module</a></li>
 <li><a class="reference internal" href="#module-ftodtf.input">ftodtf.input module</a></li>
 <li><a class="reference internal" href="#module-ftodtf.model">ftodtf.model module</a></li>
+<li><a class="reference internal" href="#module-ftodtf.training">ftodtf.training module</a></li>
+<li><a class="reference internal" href="#module-ftodtf.validation">ftodtf.validation module</a></li>
 <li><a class="reference internal" href="#module-ftodtf">Module contents</a></li>
 </ul>
 </li>
