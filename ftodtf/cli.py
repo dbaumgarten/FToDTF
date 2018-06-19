@@ -35,7 +35,8 @@ parser.add_argument('--valid_window', type=int,
                     help="")
 
 parser.add_argument('--corpus_path', type=str,
-                    help='Path to the corpus/training_data.')
+                    help='Path to the corpus/training_data.',
+                    required=True)
 
 
 # TODO: Check for valid input of the user!

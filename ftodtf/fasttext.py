@@ -34,11 +34,9 @@ import ftodtf.evaluation as evaluation
 
 current_path = os.getcwd()
 default_logpath = os.path.join(current_path,"log")
-default_file_path = os.path.join(os.path.join(os.path.dirname(__file__),
-                                              "data/text8"))
 
 
-def run(log_dir=default_logpath,
+def run(corpus_path, log_dir=default_logpath,
         steps = 100001,
         vocabulary_size = 50000,
         batch_size = 128,
@@ -46,11 +44,11 @@ def run(log_dir=default_logpath,
         skip_window = 1,
         num_sampled = 64,
         valid_size = 16,
-        valid_window = 100,
-        corpus_path = default_file_path):
-  """ Run the fasttext training. ATTENTION!: The default values for the path-parameters reported by sphinx are wrong!
-      The correct defaults are listed below.
+        valid_window = 100):
+  """ Run the fasttext training. ATTENTION!: The default values for the log_dir reported by sphinx are wrong!
+      The correct default is listed below.
 
+       :param str corpus: Path to the corpus/ training_data.
        :param str log_dir: Directory to write the generated files to. Default: <current-dir>/log
        :param int steps: How many training steps to perform
        :param int vocabulary_size: How many words the vocabulary will have. Only the vocabulary_size most frequent words will be processed.
@@ -60,7 +58,6 @@ def run(log_dir=default_logpath,
        :param int num_sampled: Number of negative examples to sample when computing the nce_loss
        :param int valid_size: Number of random words to use for validation
        :param int valid_window: Choose random valid_saze words from the valid_window most frequend words to use for validation
-       :param str corpus: Path to the corpus/ training_data. Default: <installdir-of-ftodtf>/data
   """
   print(log_dir)
   if not os.path.exists(log_dir):
