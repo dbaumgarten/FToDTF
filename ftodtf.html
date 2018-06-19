@@ -47,8 +47,8 @@
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>flag</strong> – The name of the hyperparameter.</li>
-<li><strong>value</strong> – The value of the hyperparameter provided by the user.</li>
+<li><strong>flag</strong> (<em>str</em>) – The name of the hyperparameter.</li>
+<li><strong>value</strong> (<em>int</em><em> or </em><em>str</em>) – The value of the hyperparameter provided by the user.</li>
 </ul>
 </td>
 </tr>
@@ -113,7 +113,7 @@ The correct default is listed below.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name" colspan="2">param str corpus:</th></tr>
+<tr class="field-odd field"><th class="field-name" colspan="2">param str corpus_path:</th></tr>
 <tr class="field-odd field"><td>&#160;</td><td class="field-body">Path to the corpus/ training_data.</td>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">param str log_dir:</th></tr>
@@ -141,7 +141,7 @@ The correct default is listed below.</p>
 <tr class="field-odd field"><td>&#160;</td><td class="field-body">Number of random words to use for validation</td>
 </tr>
 <tr class="field-even field"><th class="field-name" colspan="2">param int valid_window:</th></tr>
-<tr class="field-even field"><td>&#160;</td><td class="field-body">Choose random valid_saze words from the valid_window most frequend words to use for validation</td>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">Choose random valid_size words from the valid_window most frequent words to use for validation</td>
 </tr>
 </tbody>
 </table>
