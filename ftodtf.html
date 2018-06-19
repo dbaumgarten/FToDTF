@@ -27,6 +27,8 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
+          
+
           <div class="body" role="main">
             
   <div class="section" id="ftodtf-package">
@@ -103,43 +105,43 @@
 <span id="ftodtf-fasttext-module"></span><h2>ftodtf.fasttext module<a class="headerlink" href="#module-ftodtf.fasttext" title="Permalink to this headline">¶</a></h2>
 <dl class="function">
 <dt id="ftodtf.fasttext.run">
-<code class="descclassname">ftodtf.fasttext.</code><code class="descname">run</code><span class="sig-paren">(</span><em>log_dir='/home/travis/build/dbaumgarten/FToDTF/docs/log'</em>, <em>steps=100001</em>, <em>vocabulary_size=50000</em>, <em>batch_size=128</em>, <em>embedding_size=128</em>, <em>skip_window=1</em>, <em>num_sampled=64</em>, <em>valid_size=16</em>, <em>valid_window=100</em>, <em>corpus_path='/home/travis/virtualenv/python3.6.3/lib/python3.6/site-packages/ftodtf/data/text8'</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.fasttext.run" title="Permalink to this definition">¶</a></dt>
-<dd><p>Run the fasttext training. ATTENTION!: The default values for the path-parameters reported by sphinx are wrong!
-The correct defaults are listed below.</p>
+<code class="descclassname">ftodtf.fasttext.</code><code class="descname">run</code><span class="sig-paren">(</span><em>corpus_path</em>, <em>log_dir='/home/travis/build/dbaumgarten/FToDTF/docs/log'</em>, <em>steps=100001</em>, <em>vocabulary_size=50000</em>, <em>batch_size=128</em>, <em>embedding_size=128</em>, <em>skip_window=1</em>, <em>num_sampled=64</em>, <em>valid_size=16</em>, <em>valid_window=100</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.fasttext.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run the fasttext training. ATTENTION!: The default values for the log_dir reported by sphinx are wrong!
+The correct default is listed below.</p>
 <blockquote>
 <div><table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name" colspan="2">param str log_dir:</th></tr>
-<tr class="field-odd field"><td>&#160;</td><td class="field-body">Directory to write the generated files to. Default: &lt;current-dir&gt;/log</td>
+<tr class="field-odd field"><th class="field-name" colspan="2">param str corpus:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">Path to the corpus/ training_data.</td>
 </tr>
-<tr class="field-even field"><th class="field-name" colspan="2">param int steps:</th></tr>
-<tr class="field-even field"><td>&#160;</td><td class="field-body">How many training steps to perform</td>
+<tr class="field-even field"><th class="field-name" colspan="2">param str log_dir:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">Directory to write the generated files to. Default: &lt;current-dir&gt;/log</td>
 </tr>
-<tr class="field-odd field"><th class="field-name" colspan="2">param int vocabulary_size:</th></tr>
-<tr class="field-odd field"><td>&#160;</td><td class="field-body">How many words the vocabulary will have. Only the vocabulary_size most frequent words will be processed.</td>
+<tr class="field-odd field"><th class="field-name" colspan="2">param int steps:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">How many training steps to perform</td>
 </tr>
-<tr class="field-even field"><th class="field-name" colspan="2">param int batch_size:</th></tr>
-<tr class="field-even field"><td>&#160;</td><td class="field-body">How many trainings-samples to process per batch</td>
+<tr class="field-even field"><th class="field-name" colspan="2">param int vocabulary_size:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">How many words the vocabulary will have. Only the vocabulary_size most frequent words will be processed.</td>
 </tr>
-<tr class="field-odd field"><th class="field-name" colspan="2">param int embedding_size:</th></tr>
-<tr class="field-odd field"><td>&#160;</td><td class="field-body">Dimension of the computed embedding vectors.</td>
+<tr class="field-odd field"><th class="field-name" colspan="2">param int batch_size:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">How many trainings-samples to process per batch</td>
 </tr>
-<tr class="field-even field"><th class="field-name" colspan="2">param int skip_window:</th></tr>
-<tr class="field-even field"><td>&#160;</td><td class="field-body">How many words to consider left and right of the target-word</td>
+<tr class="field-even field"><th class="field-name" colspan="2">param int embedding_size:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">Dimension of the computed embedding vectors.</td>
 </tr>
-<tr class="field-odd field"><th class="field-name" colspan="2">param int num_sampled:</th></tr>
-<tr class="field-odd field"><td>&#160;</td><td class="field-body">Number of negative examples to sample when computing the nce_loss</td>
+<tr class="field-odd field"><th class="field-name" colspan="2">param int skip_window:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">How many words to consider left and right of the target-word</td>
 </tr>
-<tr class="field-even field"><th class="field-name" colspan="2">param int valid_size:</th></tr>
-<tr class="field-even field"><td>&#160;</td><td class="field-body">Number of random words to use for validation</td>
+<tr class="field-even field"><th class="field-name" colspan="2">param int num_sampled:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">Number of negative examples to sample when computing the nce_loss</td>
 </tr>
-<tr class="field-odd field"><th class="field-name" colspan="2">param int valid_window:</th></tr>
-<tr class="field-odd field"><td>&#160;</td><td class="field-body">Choose random valid_saze words from the valid_window most frequend words to use for validation</td>
+<tr class="field-odd field"><th class="field-name" colspan="2">param int valid_size:</th></tr>
+<tr class="field-odd field"><td>&#160;</td><td class="field-body">Number of random words to use for validation</td>
 </tr>
-<tr class="field-even field"><th class="field-name" colspan="2">param str corpus:</th></tr>
-<tr class="field-even field"><td>&#160;</td><td class="field-body">Path to the corpus/ training_data. Default: &lt;installdir-of-ftodtf&gt;/data</td>
+<tr class="field-even field"><th class="field-name" colspan="2">param int valid_window:</th></tr>
+<tr class="field-even field"><td>&#160;</td><td class="field-body">Choose random valid_saze words from the valid_window most frequend words to use for validation</td>
 </tr>
 </tbody>
 </table>
@@ -349,6 +351,7 @@ Must be called inside a tf.Session</p>
 
 
           </div>
+          
         </div>
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
@@ -401,7 +404,7 @@ Must be called inside a tf.Session</p>
       
       |
       Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
-      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
       |
       <a href="_sources/ftodtf.rst.txt"
