@@ -12,7 +12,7 @@ parser.add_argument('-s', '--steps', type=int,
 parser.add_argument('-v', '--vocabulary_size', type=int,
                     help="The number of unique words in the corpus.")
 
-parser.add_argument('-b', '--batch-size', type=int,
+parser.add_argument('-b', '--batch_size', type=int,
                     help="The size of training samples to process in one go.")
 
 parser.add_argument('-e', '--embedding_size', type=int,
