@@ -24,12 +24,6 @@ parser.add_argument('-w', '--skip_window', type=int,
 parser.add_argument('-n', '--num_sampled', type=int,
                     help="Number of negative examples to sample.")
 
-parser.add_argument('-V', '--valid_size', type=int,
-                    help="Number of random words to use for validation.")
-
-parser.add_argument('-W', '--valid_window', type=int,
-                    help="Most frequent words to use for validation.")
-
 parser.add_argument('-c', '--corpus_path', type=str, required=True,
                     help='Path to the corpus/training data.')
 
