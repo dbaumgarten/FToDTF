@@ -38,6 +38,7 @@
 </div>
 <div class="section" id="module-ftodtf.cli">
 <span id="ftodtf-cli-module"></span><h2>ftodtf.cli module<a class="headerlink" href="#module-ftodtf.cli" title="Permalink to this headline">¶</a></h2>
+<p>This module handles parsing of cli-flags and then calls the needed function from the library</p>
 <dl class="function">
 <dt id="ftodtf.cli.check_valid_input">
 <code class="descclassname">ftodtf.cli.</code><code class="descname">check_valid_input</code><span class="sig-paren">(</span><em>flag</em>, <em>value</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.cli.check_valid_input" title="Permalink to this definition">¶</a></dt>
@@ -341,8 +342,8 @@ The correct default is listed below.</p>
 <span id="ftodtf-validation-module"></span><h2>ftodtf.validation module<a class="headerlink" href="#module-ftodtf.validation" title="Permalink to this headline">¶</a></h2>
 <p>Handles all evaluation relatet tasks, like printing the nearest neighbors of a word or visualizing the generated vectors</p>
 <dl class="function">
-<dt id="ftodtf.validation.printSimilarityCheck">
-<code class="descclassname">ftodtf.validation.</code><code class="descname">printSimilarityCheck</code><span class="sig-paren">(</span><em>similarityop</em>, <em>words</em>, <em>reverse_dictionary</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.validation.printSimilarityCheck" title="Permalink to this definition">¶</a></dt>
+<dt id="ftodtf.validation.print_similarity_check">
+<code class="descclassname">ftodtf.validation.</code><code class="descname">print_similarity_check</code><span class="sig-paren">(</span><em>similarityop</em>, <em>words</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.validation.print_similarity_check" title="Permalink to this definition">¶</a></dt>
 <dd><p>Print similarity between given words
 :param similarityop: The tensorflow operation returning the computed similarity
 :param list(str) words: Words to print he similarity for
