@@ -1,12 +1,13 @@
 """This module handles the building of the tf execution graph"""
-import tensorflow as tf
 import math
+import tensorflow as tf
 import ftodtf.input as inp
 
 
 class Model():
     """Builds and represents the tensorflow computation graph. Exports all important operations via fields"""
-    def __init__(self,sample_generator_func,batch_size,embedding_size,vocabulary_size,validation_words,num_sampled,num_buckets):
+
+    def __init__(self, sample_generator_func, batch_size, embedding_size, vocabulary_size, validation_words, num_sampled, num_buckets):
         """
         Constuctor for Model
 
@@ -21,8 +22,9 @@ class Model():
 
         with self.graph.as_default():
 
-            #create a dataset pipeline from the given sample-generator
-            inputpipe = tf.data.Dataset.from_generator(sample_generator_func,output_types=(tf.string,tf.int32),output_shapes=([batch_size,None],[batch_size,1]))
+            # create a dataset pipeline from the given sample-generator
+            inputpipe = tf.data.Dataset.from_generator(sample_generator_func, output_types=(
+                tf.string, tf.int32), output_shapes=([batch_size, None], [batch_size, 1]))
             inputpipe = inputpipe.prefetch(1)
             iterator = inputpipe.make_initializable_iterator()
             self.dataset_init = iterator.initializer
@@ -35,19 +37,22 @@ class Model():
 
             # Create all Weights
             with tf.name_scope('embeddings'):
-                self.embeddings = tf.Variable(tf.random_uniform([num_buckets, embedding_size], -1.0, 1.0))
+                self.embeddings = tf.Variable(tf.random_uniform(
+                    [num_buckets, embedding_size], -1.0, 1.0))
             with tf.name_scope('weights'):
                 nce_weights = tf.Variable(
-                tf.truncated_normal([vocabulary_size, embedding_size],stddev=1.0 / math.sqrt(embedding_size)))
+                    tf.truncated_normal([vocabulary_size, embedding_size], stddev=1.0 / math.sqrt(embedding_size)))
             with tf.name_scope('biases'):
                 nce_biases = tf.Variable(tf.zeros([vocabulary_size]))
 
             # Hash the input strings to int-buckets
-            self.hashed = tf.string_to_hash_bucket_fast(self.train_inputs,num_buckets)
+            self.hashed = tf.string_to_hash_bucket_fast(
+                self.train_inputs, num_buckets)
             # look up the corresponding vector for each hash
-            self.looked_up = tf.nn.embedding_lookup(self.embeddings, self.hashed)
+            self.looked_up = tf.nn.embedding_lookup(
+                self.embeddings, self.hashed)
             # sum up all n-gram vectors of a word to get a vector for the whole word
-            self.target_vectors = tf.reduce_sum(self.looked_up,1)
+            self.target_vectors = tf.reduce_sum(self.looked_up, 1)
 
             with tf.name_scope('loss'):
                 self.loss = tf.reduce_mean(
@@ -64,7 +69,8 @@ class Model():
 
             # Construct the SGD optimizer using a learning rate of 1.0.
             with tf.name_scope('optimizer'):
-                self.optimizer = tf.train.GradientDescentOptimizer(0.01).minimize(self.loss)
+                self.optimizer = tf.train.GradientDescentOptimizer(
+                    0.01).minimize(self.loss)
 
             # Merge all summaries.
             self.merged = tf.summary.merge_all()
@@ -76,39 +82,40 @@ class Model():
             self.saver = tf.train.Saver()
 
             if validation_words:
-                self.validation = self._validationop(validation_words,self.embeddings,num_buckets)
+                self.validation = self._validationop(
+                    validation_words, self.embeddings, num_buckets)
 
-            
     @staticmethod
-    def _validationop(compare,embeddings,num_buckets):
+    def _validationop(compare, embeddings, num_buckets):
         """This Operation is used to regularily computed the words closest to some input words. This way a human can judge if the training is really making usefull progress
-        
+
         :param list(str) compare: A list of strings representing the words to find similar words of
         :param tf.Tensor embeddings: The trained vector-representation to use for the computation
         :param int num_buckets: How many buckets to use when hashing the words. Must be the same value as used when computing the embeddings
         """
 
         # ngrammize and pad the words
-        ngrams = [ inp.generate_ngram_per_word(x) for x in compare]
+        ngrams = [inp.generate_ngram_per_word(x) for x in compare]
         maxlen = 0
         for ng in ngrams:
-            maxlen = max(maxlen,len(ng))
-        for i in range(len(ngrams)):
-            ngrams[i] = inp.pad_to_length(ngrams[i],maxlen)
+            maxlen = max(maxlen, len(ng))
+        for i, _ in enumerate(ngrams):
+            ngrams[i] = inp.pad_to_length(ngrams[i], maxlen)
 
-        dataset = tf.constant(ngrams, dtype=tf.string, shape=[len(compare),maxlen])
-        hashed = tf.string_to_hash_bucket_fast(dataset,num_buckets)
-        ng_embeddings = tf.nn.embedding_lookup(embeddings,hashed)
-        word_embeddings = tf.reduce_sum(ng_embeddings,1)
+        dataset = tf.constant(ngrams, dtype=tf.string,
+                              shape=[len(compare), maxlen])
+        hashed = tf.string_to_hash_bucket_fast(dataset, num_buckets)
+        ng_embeddings = tf.nn.embedding_lookup(embeddings, hashed)
+        word_embeddings = tf.reduce_sum(ng_embeddings, 1)
 
         # normalize word-vectors before computing dot-product (so the results stay between -1 and 1)
-        norm = tf.sqrt(tf.reduce_sum(tf.square(word_embeddings), 1, keep_dims=True))
+        norm = tf.sqrt(tf.reduce_sum(
+            tf.square(word_embeddings), 1, keep_dims=True))
         normalized_embeddings = word_embeddings / norm
 
         return tf.matmul(normalized_embeddings, normalized_embeddings, transpose_b=True)
 
-
-    def save(self,session,file):
+    def save(self, session, file):
         """Save the current session (including variable values) to a file
 
         :param session: The current session to save
@@ -116,7 +123,7 @@ class Model():
         :param str file: The path to save to
         :returns: The result of saver.save()
         """
-        return self.saver.save(session,file)
+        return self.saver.save(session, file)
 
     def init(self):
         """ Initialize variables and the input iterator.

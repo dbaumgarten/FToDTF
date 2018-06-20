@@ -31,99 +31,101 @@ import ftodtf.input as inp
 import ftodtf.model as model
 import ftodtf.validation
 
-current_path = os.getcwd()
-default_logpath = os.path.join(current_path,"log")
+CURRENNT_PATH = os.getcwd()
+DEFAULT_LOGPATH = os.path.join(CURRENNT_PATH, "log")
 
 
-def train(corpus_path, log_dir=default_logpath,
-        steps = 100001,
-        vocabulary_size = 50000,
-        batch_size = 128,
-        embedding_size = 128,
-        skip_window = 1,
-        num_sampled = 64,
-        ngram_size = 3,
-        num_buckets = 100000,
-        validation_words = None):
-  """ Run the fasttext training. ATTENTION!: The default values for the log_dir reported by sphinx are wrong!
-      The correct default is listed below.
+def train(corpus_path, log_dir=DEFAULT_LOGPATH,
+          steps=100001,
+          vocabulary_size=50000,
+          batch_size=128,
+          embedding_size=128,
+          skip_window=1,
+          num_sampled=64,
+          ngram_size=3,
+          num_buckets=100000,
+          validation_words=None):
+    """ Run the fasttext training. ATTENTION!: The default values for the log_dir reported by sphinx are wrong!
+        The correct default is listed below.
 
-       :param str corpus_path: Path to the corpus/ training_data.
-       :param str log_dir: Directory to write the generated files to. Default: <current-dir>/log
-       :param int steps: How many training steps to perform
-       :param int vocabulary_size: How many words the vocabulary will have. Only the vocabulary_size most frequent words will be processed.
-       :param int batch_size: How many trainings-samples to process per batch
-       :param int embedding_size: Dimension of the computed embedding vectors.
-       :param int skip_window: How many words to consider left and right of the target-word
-       :param int num_sampled: Number of negative examples to sample when computing the nce_loss
-       :param int ngram_size: How large the ngrams (in which the target words are split) should be
-       :param int num_buckets: How many hash-buckets to use when hashing the ngrams to numbers
-       :param list(str) validation_words: A list of words. The similarity of these words to each other will be regularily computed to indicade the training-progress
-  """
-  print(log_dir)
-  if not os.path.exists(log_dir):
-      os.makedirs(log_dir)
+         :param str corpus_path: Path to the corpus/ training_data.
+         :param str log_dir: Directory to write the generated files to. Default: <current-dir>/log
+         :param int steps: How many training steps to perform
+         :param int vocabulary_size: How many words the vocabulary will have. Only the vocabulary_size most frequent words will be processed.
+         :param int batch_size: How many trainings-samples to process per batch
+         :param int embedding_size: Dimension of the computed embedding vectors.
+         :param int skip_window: How many words to consider left and right of the target-word
+         :param int num_sampled: Number of negative examples to sample when computing the nce_loss
+         :param int ngram_size: How large the ngrams (in which the target words are split) should be
+         :param int num_buckets: How many hash-buckets to use when hashing the ngrams to numbers
+         :param list(str) validation_words: A list of words. The similarity of these words to each other will be regularily computed to indicade the training-progress
+    """
+    print(log_dir)
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
 
-  try:
-    inp.check_valid_path(corpus_path)
+    try:
+        inp.check_valid_path(corpus_path)
 
-  except FileNotFoundError as e:
-    print(": ".join(["ERROR", e.__str__()]))
-    sys.exit(-1) # EXIT
+    except FileNotFoundError as e:
+        print(": ".join(["ERROR", e.__str__()]))
+        sys.exit(-1)  # EXIT
 
-  else:
-    filename = inp.unarchive(corpus_path)
+    else:
+        filename = inp.unarchive(corpus_path)
 
-  # Read the data into a list of strings.
-  print("Reading dataset")
-  p = inp.InputProcessor(filename,skip_window,batch_size,vocabulary_size,ngram_size)
-  p.preprocess()
+    # Read the data into a list of strings.
+    print("Reading dataset")
+    p = inp.InputProcessor(filename, skip_window,
+                           batch_size, vocabulary_size, ngram_size)
+    p.preprocess()
 
-  # Get the computation-graph and the associated operations
-  m = model.Model(p.batches,batch_size,embedding_size,vocabulary_size,validation_words,num_sampled,num_buckets)
+    # Get the computation-graph and the associated operations
+    m = model.Model(p.batches, batch_size, embedding_size,
+                    vocabulary_size, validation_words, num_sampled, num_buckets)
 
-  with tf.Session(graph=m.graph) as session:
-    # Open a writer to write summaries.
-    writer = tf.summary.FileWriter(log_dir, session.graph)
+    with tf.Session(graph=m.graph) as session:
+        # Open a writer to write summaries.
+        writer = tf.summary.FileWriter(log_dir, session.graph)
 
-    # We must initialize the model before it can be used
-    m.init()
-    print('Initialized')
+        # We must initialize the model before it can be used
+        m.init()
+        print('Initialized')
 
-    average_loss = 0
-    for step in range(steps):
-
-      # Define metadata variable.
-      run_metadata = tf.RunMetadata()
-
-      # We perform one update step by evaluating the optimizer op (including it
-      # in the list of returned values for session.run()
-      # Also, evaluate the merged op to get all summaries from the returned "summary" variable.
-      # Feed metadata variable to session for visualizing the graph in TensorBoard.
-      _, summary, loss_val = session.run(
-          [m.optimizer,m.merged,m.loss],
-          run_metadata=run_metadata)
-      average_loss += loss_val
-
-      # Add returned summaries to writer in each step.
-      writer.add_summary(summary, step)
-      # Add metadata to visualize the graph for the last run.
-      if step == (steps - 1):
-        writer.add_run_metadata(run_metadata, 'step%d' % step)
-
-      if step % 2000 == 0:
-        if step > 0:
-          average_loss /= 2000
-        # The average loss is an estimate of the loss over the last 2000 batches.
-        print('Average loss at step ', step, ': ', average_loss)
         average_loss = 0
+        for step in range(steps):
 
-      # Note that this is expensive (~20% slowdown if computed every 500 steps)
-      if step % 10000 == 0 and validation_words:
-        ftodtf.validation.printSimilarityCheck(m.validation,validation_words,p.reversed_dict)
+            # Define metadata variable.
+            run_metadata = tf.RunMetadata()
 
-    # Save the model for checkpoints.
-    m.save(session, os.path.join(log_dir, 'model.ckpt'))
+            # We perform one update step by evaluating the optimizer op (including it
+            # in the list of returned values for session.run()
+            # Also, evaluate the merged op to get all summaries from the returned "summary" variable.
+            # Feed metadata variable to session for visualizing the graph in TensorBoard.
+            _, summary, loss_val = session.run(
+                [m.optimizer, m.merged, m.loss],
+                run_metadata=run_metadata)
+            average_loss += loss_val
 
+            # Add returned summaries to writer in each step.
+            writer.add_summary(summary, step)
+            # Add metadata to visualize the graph for the last run.
+            if step == (steps - 1):
+                writer.add_run_metadata(run_metadata, 'step%d' % step)
 
-  writer.close()
+            if step % 2000 == 0:
+                if step > 0:
+                    average_loss /= 2000
+                # The average loss is an estimate of the loss over the last 2000 batches.
+                print('Average loss at step ', step, ': ', average_loss)
+                average_loss = 0
+
+            # Note that this is expensive (~20% slowdown if computed every 500 steps)
+            if step % 10000 == 0 and validation_words:
+                ftodtf.validation.print_similarity_check(
+                    m.validation, validation_words)
+
+        # Save the model for checkpoints.
+        m.save(session, os.path.join(log_dir, 'model.ckpt'))
+
+    writer.close()
