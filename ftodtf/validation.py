@@ -11,4 +11,4 @@ def printSimilarityCheck(similarityop,words,reverse_dictionary):
     sim = similarityop.eval()
     for i in range(len(words)):
         for j in range(len(words)):
-            print("Similarity between {} and {}: {}".format(words[i],words[j],sim[i][j]))
+            print("Similarity between {} and {}: {:.2f}".format(words[i],words[j],sim[i][j]))

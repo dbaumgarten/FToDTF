@@ -66,11 +66,6 @@ class Model():
             with tf.name_scope('optimizer'):
                 self.optimizer = tf.train.GradientDescentOptimizer(0.01).minimize(self.loss)
 
-            # Compute the cosine similarity between minibatch examples and all embeddings.
-            # Only used once at the end of the training just before saving the weights
-            norm = tf.sqrt(tf.reduce_sum(tf.square(self.embeddings), 1, keep_dims=True))
-            self.normalized_embeddings = self.embeddings / norm
- 
             # Merge all summaries.
             self.merged = tf.summary.merge_all()
 
@@ -81,11 +76,11 @@ class Model():
             self.saver = tf.train.Saver()
 
             if validation_words:
-                self.similarity = self._validationop(validation_words,self.normalized_embeddings,num_buckets)
+                self.validation = self._validationop(validation_words,self.embeddings,num_buckets)
 
             
-
-    def _validationop(self,compare,embeddings,num_buckets):
+    @staticmethod
+    def _validationop(compare,embeddings,num_buckets):
         """This Operation is used to regularily computed the words closest to some input words. This way a human can judge if the training is really making usefull progress
         
         :param list(str) compare: A list of strings representing the words to find similar words of
@@ -101,11 +96,16 @@ class Model():
         for i in range(len(ngrams)):
             ngrams[i] = inp.pad_to_length(ngrams[i],maxlen)
 
-        valid_dataset = tf.constant(ngrams, dtype=tf.string, shape=[len(compare),maxlen])
-        valid_embeddings = tf.string_to_hash_bucket_fast(valid_dataset,num_buckets)
-        valid_embeddings = tf.nn.embedding_lookup(embeddings,valid_embeddings)
-        valid_embeddings = tf.reduce_sum(valid_embeddings,1)
-        return tf.matmul(valid_embeddings, valid_embeddings, transpose_b=True)
+        dataset = tf.constant(ngrams, dtype=tf.string, shape=[len(compare),maxlen])
+        hashed = tf.string_to_hash_bucket_fast(dataset,num_buckets)
+        ng_embeddings = tf.nn.embedding_lookup(embeddings,hashed)
+        word_embeddings = tf.reduce_sum(ng_embeddings,1)
+
+        # normalize word-vectors before computing dot-product (so the results stay between -1 and 1)
+        norm = tf.sqrt(tf.reduce_sum(tf.square(word_embeddings), 1, keep_dims=True))
+        normalized_embeddings = word_embeddings / norm
+
+        return tf.matmul(normalized_embeddings, normalized_embeddings, transpose_b=True)
 
 
     def save(self,session,file):

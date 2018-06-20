@@ -26,7 +26,6 @@ import os
 import sys
 
 import tensorflow as tf
-import numpy as np
 
 import ftodtf.input as inp
 import ftodtf.model as model
@@ -121,7 +120,7 @@ def train(corpus_path, log_dir=default_logpath,
 
       # Note that this is expensive (~20% slowdown if computed every 500 steps)
       if step % 10000 == 0 and validation_words:
-        ftodtf.validation.printSimilarityCheck(m.similarity,validation_words,p.reversed_dict)
+        ftodtf.validation.printSimilarityCheck(m.validation,validation_words,p.reversed_dict)
 
     # Save the model for checkpoints.
     m.save(session, os.path.join(log_dir, 'model.ckpt'))
