@@ -21,7 +21,7 @@
 #
 #
 # ==============================================================================
-
+""" This module handles the training of the word-vectors"""
 import os
 import sys
 
