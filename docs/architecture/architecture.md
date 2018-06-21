@@ -28,14 +28,13 @@ sich um die gewünschten Worteinbettungen, welche man trainiert haben möchte.
 
 #### Implementierung
 
-Als Implementierungsvorlage dient das skip-gram Beispiel [2]. Dabei wird die Vorlage modularisiert und einige 
+Als Implementierungsvorlage dient das skip-gram Beispiel [2]. Dabei wird die Vorlage modularisiert und erhebliche 
 Veränderung an dem TensorFlow-Graphen vorgenommen. So entsprechen die Eingabewerte den Tensor-Placeholder und die n-gram/ 
 Kontext-Wort Matrix den Tensor-Variablen. Die Tensor-Variablen stellen veränderliche Bestandteile des Graphen dar und 
 werden als Kanten aufgefasst. Wie bereits erwähnt dient als Verlustfunktion die negative Log-Likelihood-Funktion in Kombination 
 mit dem negative Sampling. Das Gradientenverfahren wird über die Klasse GradientDescentOptimizer realisiert. Sowohl die Verlustfunktion als auch
 das Gradientenverfahren stellen in dem Tensorflow-Graphen die Operationen (Knoten) dar. Hyperparameter wie Lernrate, Featuregröße (Anzahl Neuronen/Spalten der Matrizen), n-gram Matrixgröße (_K_ Zeilen), Batchgröße, Anzahl der Kontext-Wörter , Anzahl der n-gramme, ...,
 sollen beim Aufruf des Programs durch den Benutzer einstellbar sein. 
-
 
 
 
@@ -73,7 +72,7 @@ Für das Deployment auf dem Galaxy-Cluster soll docker-swarm benutzt werden, wod
 
 Die Vorverarbeitung der Trainingsdaten geschieht mittels NLTK. Dabei werden beispielsweise Satzzeichen entfernt, Worte werden in ein einheitliches Format überführt und der Trainingskorpus in Inhaltlich zusammenhängende Blöcke geteilt.
 Das Ergebnis der Vorverarbeitung ist eine einzelne große Text-Datei. Jede Zeile repräsentiert einen inhaltlich zusammenhängenden Block (z.B. Artikel, Absätze, Sätze o.ä.).
-Eventuell wird die Berechnung einiger für den Fast-text-Algorithmus nötigen Werte (z.B. Worfrequenzen) bereits in diesem Schritt ermittelt, so das dies später nicht mehr getan werden muss.
+Eventuell wird die Berechnung einiger für den fasttext-Algorithmus nötigen Werte (z.B. Worfrequenzen) bereits in diesem Schritt ermittelt, so das dies später nicht mehr getan werden muss. Das subsampling wird nach den Empfehlungen (Formel sowie Treshold von 1e-4/5) von Mikolov u.a. [4] vorgenommen.
 Das eigentliche Programm ließt diese Datei ein und generiert daraus on-the-fly Trainingsbatches aus Targetword-Contextword-Paaren für das neuronale Netzwerk.
 
 ## Details zur Verteilung
@@ -110,7 +109,7 @@ werden periodisch die Gewichte gespeichert.
 
 Unsere Architektur (Worker,Parameterserver) entspricht im wesentlichen Downpour-SGD. Bei Art der 
 Paralellität handelt es sich hierbei um Datenparalellität. Modellparalellität kommt nicht zum Einsatz.
-Die Art der Grapherstellung (jeder Worker baut seinen eigenen Graph) wird Between-Graph Replication genannt.
+Die Art der Grapherstellung (jeder Worker baut seinen eigenen Graph) wird Between-Graph Replication [3] genannt.
 Der Vorteil dabei ist, dass lokal beim Worker vorhandene Trainingsdaten genutzt werden können und
 nicht von einem zentralen Client aus übertragen werden müssen.
 
@@ -118,16 +117,15 @@ nicht von einem zentralen Client aus übertragen werden müssen.
 der Gewichte, da bei jedem Trainingsschritt nur ein kleiner Teil der Gewichte modifiziert wird. 
 Dadurch sind konflikte durch gleichzeitige Updates verschiedener Worker eher selten und haben kaum negativen Einfluss.
 
-
-
-
+![](./between_graph.png)[3]
 
 
 ## Quellen
 
 [1]https://arxiv.org/pdf/1607.04606.pdf  
-[2]https://github.com/tensorflow/tensorflow/tree/master/tensorflow/examples/tutorials/word2vec
-
+[2]https://github.com/tensorflow/tensorflow/tree/master/tensorflow/examples/tutorials/word2vec  
+[3]Aurélien Géron (2017): Hands-On Machine Learning with Scikit-Learn and TensorFlow, S. 335  
+[4]https://arxiv.org/pdf/1310.4546.pdf
 
 
 

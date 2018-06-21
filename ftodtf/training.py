@@ -74,6 +74,8 @@ def train(corpus_path, log_dir=DEFAULT_LOGPATH,
     else:
         filename = inp.unarchive(corpus_path)
 
+
+
     # Read the data into a list of strings.
     print("Reading dataset")
     p = inp.InputProcessor(filename, skip_window,

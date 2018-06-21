@@ -10,6 +10,7 @@ from tempfile import gettempdir
 from nltk import ngrams
 
 
+
 def check_valid_path(file_path):
     """
     Checks if the given path exists.
