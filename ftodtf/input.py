@@ -119,7 +119,7 @@ class InputProcessor():
         self.dict = None
         self.drop_p_word = None
 
-    def preprocess(self, threshold=1e-4):
+    def preprocess(self, threshold=1e-3):
         """ Do the needed proprocessing of the dataset. Count word frequencies, create a mapping word->int"""
         self.wordcount = collections.Counter(self._words_in_file())
 
@@ -138,17 +138,6 @@ class InputProcessor():
             self.dict[word] = idx
             idx += 1
 
-    def _check_subsampling(self, word):
-        """Check if the target or context word should be ignored
-
-        :param str word: Target or Context word which should be checked.
-        :return bool: True if the word should be dropped, False otherwise.
-        """
-        if random.random() < self.drop_p_word[word]:
-            return True
-        return False
-
-
     def _words_in_file(self):
         """Returns a generator over all words in the file"""
         with open(self.filename) as f:
@@ -156,6 +145,20 @@ class InputProcessor():
                 words = line.split()
                 for word in words:
                     yield word
+
+    def check_subsampling(self, get_sample):
+        """This generators checks if the target word or context word
+        should be ignored.
+        """
+        sample_generator = get_sample
+        while True:
+            target_word, context_word = sample_generator.__next__()
+            if random.random() < self.drop_p_word[target_word] or \
+                    random.random() < self.drop_p_word[context_word]:
+                # found frequent word, so ignore it
+                continue
+            else:
+                yield (target_word, context_word)
 
     def string_samples(self):
         """ Returns a generator for samples (targetword->contextword)
@@ -170,22 +173,18 @@ class InputProcessor():
                 idx = 0
                 words = line.split()
                 for word in words:
-                    # check if the target word should be ignored
-                    if not self._check_subsampling(word):
-                        # choose a random context word. Take special care to stay in the bounds of the list
-                        contextoffset = random.choice(contextoffsets)
-                        contextindex = idx+contextoffset
-                        # if selected index-offset reaches outside of the list, try the other direction
-                        if idx+contextoffset < 0 or idx+contextoffset >= len(words):
-                            contextoffset = contextoffset*-1
-                            # above fails if the current line is to short. Stay inside the bounds at all cost!
-                            contextindex = min(
-                                len(words)-1, max(0, idx+contextoffset))
+                    # choose a random context word. Take special care to stay in the bounds of the list
+                    contextoffset = random.choice(contextoffsets)
+                    contextindex = idx+contextoffset
+                    # if selected index-offset reaches outside of the list, try the other direction
+                    if idx+contextoffset < 0 or idx+contextoffset >= len(words):
+                        contextoffset = contextoffset*-1
+                        # above fails if the current line is to short. Stay inside the bounds at all cost!
+                        contextindex = min(
+                            len(words)-1, max(0, idx+contextoffset))
+                    yield (word, words[contextindex])
+                    idx += 1
 
-                        # check if the context word should be ignored
-                        if not self._check_subsampling(words[contextindex]):
-                            yield (word, words[contextindex])
-                            idx += 1
 
 
     def _lookup_label(self, gen):
@@ -259,4 +258,10 @@ class InputProcessor():
 
     def batches(self):
         """ Returns a generator the will yield an infinite amout of training-batches ready to feed into the model"""
-        return self._equalize_batch(self._batch(self._ngrammize(self._lookup_label(self._repeat(self.string_samples)))))
+        return self._equalize_batch(
+               self._batch(
+               self._ngrammize(
+               self._lookup_label(
+               self.check_subsampling(
+               self._repeat(
+               self.string_samples))))))
