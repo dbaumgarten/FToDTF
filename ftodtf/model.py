@@ -107,11 +107,8 @@ class Model():
         hashed = tf.string_to_hash_bucket_fast(dataset, num_buckets)
         ng_embeddings = tf.nn.embedding_lookup(embeddings, hashed)
         word_embeddings = tf.reduce_sum(ng_embeddings, 1)
-
         # normalize word-vectors before computing dot-product (so the results stay between -1 and 1)
-        norm = tf.sqrt(tf.reduce_sum(
-            tf.square(word_embeddings), 1, keep_dims=True))
-        normalized_embeddings = word_embeddings / norm
+        normalized_embeddings = tf.nn.l2_normalize(word_embeddings, 1)
 
         return tf.matmul(normalized_embeddings, normalized_embeddings, transpose_b=True)
 
