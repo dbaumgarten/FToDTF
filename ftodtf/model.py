@@ -19,7 +19,6 @@ class Model():
         :param int num_sampled: How many negative samples to draw during nce_loss calculation
         """
         self.graph = tf.Graph()
-        self.num_buckets = num_buckets
 
         with self.graph.as_default():
 
@@ -39,7 +38,7 @@ class Model():
             # Create all Weights
             with tf.name_scope('embeddings'):
                 self.embeddings = tf.Variable(tf.random_uniform(
-                    [num_buckets, embedding_size], -1.0, 1.0))
+                    [num_buckets-1, embedding_size], -1.0, 1.0))
             with tf.name_scope('weights'):
                 nce_weights = tf.Variable(
                     tf.truncated_normal([vocabulary_size, embedding_size], stddev=1.0 / math.sqrt(embedding_size)))
@@ -47,12 +46,14 @@ class Model():
                 nce_biases = tf.Variable(tf.zeros([vocabulary_size]))
 
             # The vector for the placeholder-ngram (""). Will always be <0...> and therefore be irrelevant for reduce_sum
-            self._padding_vector = tf.constant(0.0, shape=[1, embedding_size])
+            padding_vector = tf.constant(0.0, shape=[1, embedding_size])
+            # Set the first enty in embeddings (belonging to the padding-ngram) to <0,0,...>
+            self.embeddings = tf.concat([padding_vector, self.embeddings], 0)
 
             # Bucket-hash the ngrams. Make sure "" is always hashed to 0
             # pylint: disable=E1101
             self._hasher = tf.contrib.lookup.index_table_from_tensor(
-                [""], num_oov_buckets=self.num_buckets-1, hasher_spec=tf.contrib.lookup.FastHashSpec, dtype=tf.string)
+                [""], num_oov_buckets=num_buckets-1, hasher_spec=tf.contrib.lookup.FastHashSpec, dtype=tf.string)
 
             target_vectors = self._ngrams_to_vectors(train_inputs)
 
@@ -92,8 +93,7 @@ class Model():
 
         hashed = self._hasher.lookup(ngrams)
         # Lookup the vector for each hashed value. The hash-value 0 (the value for the ngram "") will always et a 0-vector
-        looked_up = tf.nn.embedding_lookup(
-            [self._padding_vector, self.embeddings], hashed, partition_strategy="div")
+        looked_up = tf.nn.embedding_lookup(self.embeddings, hashed)
         # sum all ngram-vectors to get a word-vector
         summed = tf.reduce_sum(looked_up, 1)
         return summed
