@@ -72,7 +72,7 @@ Für das Deployment auf dem Galaxy-Cluster soll docker-swarm benutzt werden, wod
 
 Die Vorverarbeitung der Trainingsdaten geschieht mittels NLTK. Dabei werden beispielsweise Satzzeichen entfernt, Worte werden in ein einheitliches Format überführt und der Trainingskorpus in Inhaltlich zusammenhängende Blöcke geteilt.
 Das Ergebnis der Vorverarbeitung ist eine einzelne große Text-Datei. Jede Zeile repräsentiert einen inhaltlich zusammenhängenden Block (z.B. Artikel, Absätze, Sätze o.ä.).
-Eventuell wird die Berechnung einiger für den fasttext-Algorithmus nötigen Werte (z.B. Worfrequenzen) bereits in diesem Schritt ermittelt, so das dies später nicht mehr getan werden muss. Das subsampling wird nach den Empfehlungen (Formel sowie Treshold von 1e-4/5) von Mikolov u.a. [4] vorgenommen.
+Eventuell wird die Berechnung einiger für den fasttext-Algorithmus nötigen Werte (z.B. Worfrequenzen) bereits in diesem Schritt ermittelt, so das dies später nicht mehr getan werden muss. Das subsampling wird nach den Empfehlungen (Formel sowie Treshold) von Mikolov u.a. [4] vorgenommen.
 Das eigentliche Programm ließt diese Datei ein und generiert daraus on-the-fly Trainingsbatches aus Targetword-Contextword-Paaren für das neuronale Netzwerk.
 
 ## Details zur Verteilung
