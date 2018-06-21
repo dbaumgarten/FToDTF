@@ -4,6 +4,7 @@ import zipfile
 import tarfile
 import collections
 import random
+import numpy as np
 
 from tempfile import gettempdir
 from nltk import ngrams
@@ -116,10 +117,17 @@ class InputProcessor():
         # Will be populated by preprocess
         self.wordcount = None
         self.dict = None
+        self.drop_p_word = None
 
-    def preprocess(self):
+    def preprocess(self, threshold=1e-4):
         """ Do the needed proprocessing of the dataset. Count word frequencies, create a mapping word->int"""
         self.wordcount = collections.Counter(self._words_in_file())
+
+        # number of all words in the corpus
+        total_sum = sum(self.wordcount.values())
+        # drop probability for a word in the corpus
+        self.drop_p_word = {word: 1 - np.sqrt(threshold/(self.wordcount[word] /total_sum))
+                            for word in self.wordcount}
         idx = 0
         self.dict = {}
         # Assign a number to every word we have. 0 = the most common word
@@ -129,6 +137,17 @@ class InputProcessor():
                 break
             self.dict[word] = idx
             idx += 1
+
+    def _check_subsampling(self, word):
+        """Check if the target or context word should be ignored
+
+        :param str word: Target or Context word which should be checked.
+        :return bool: True if the word should be dropped, False otherwise.
+        """
+        if random.random() < self.drop_p_word[word]:
+            return True
+        return False
+
 
     def _words_in_file(self):
         """Returns a generator over all words in the file"""
@@ -151,17 +170,23 @@ class InputProcessor():
                 idx = 0
                 words = line.split()
                 for word in words:
-                    # choose a random context word. Take special care to stay in the bounds of the list
-                    contextoffset = random.choice(contextoffsets)
-                    contextindex = idx+contextoffset
-                    # if selected index-offset reaches outside of the list, try the other direction
-                    if idx+contextoffset < 0 or idx+contextoffset >= len(words):
-                        contextoffset = contextoffset*-1
-                        # above fails if the current line is to short. Stay inside the bounds at all cost!
-                        contextindex = min(
-                            len(words)-1, max(0, idx+contextoffset))
-                    yield (word, words[contextindex])
-                    idx += 1
+                    # check if the target word should be ignored
+                    if not self._check_subsampling(word):
+                        # choose a random context word. Take special care to stay in the bounds of the list
+                        contextoffset = random.choice(contextoffsets)
+                        contextindex = idx+contextoffset
+                        # if selected index-offset reaches outside of the list, try the other direction
+                        if idx+contextoffset < 0 or idx+contextoffset >= len(words):
+                            contextoffset = contextoffset*-1
+                            # above fails if the current line is to short. Stay inside the bounds at all cost!
+                            contextindex = min(
+                                len(words)-1, max(0, idx+contextoffset))
+
+                        # check if the context word should be ignored
+                        if not self._check_subsampling(words[contextindex]):
+                            yield (word, words[contextindex])
+                            idx += 1
+
 
     def _lookup_label(self, gen):
         """ Maps the second words in the input-tuple to numbers.
