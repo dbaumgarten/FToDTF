@@ -28,6 +28,14 @@ ftodtf.model module
     :undoc-members:
     :show-inheritance:
 
+ftodtf.settings module
+----------------------
+
+.. automodule:: ftodtf.settings
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 ftodtf.training module
 ----------------------
 
