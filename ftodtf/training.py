@@ -31,71 +31,46 @@ import ftodtf.input as inp
 import ftodtf.model as model
 import ftodtf.validation
 
-CURRENNT_PATH = os.getcwd()
-DEFAULT_LOGPATH = os.path.join(CURRENNT_PATH, "log")
 
+def train(settings):
+    """ Run the fasttext training.
 
-def train(corpus_path, log_dir=DEFAULT_LOGPATH,
-          steps=100001,
-          vocabulary_size=50000,
-          batch_size=128,
-          embedding_size=128,
-          skip_window=1,
-          num_sampled=64,
-          ngram_size=3,
-          num_buckets=100000,
-          validation_words=None):
-    """ Run the fasttext training. ATTENTION!: The default values for the log_dir reported by sphinx are wrong!
-        The correct default is listed below.
+    :param settings: An object encapsulating all the settings for the fasttext-model
+    :type settings: ftodtf.settings.FasttextSettings
 
-         :param str corpus_path: Path to the corpus/ training_data.
-         :param str log_dir: Directory to write the generated files to. Default: <current-dir>/log
-         :param int steps: How many training steps to perform
-         :param int vocabulary_size: How many words the vocabulary will have. Only the vocabulary_size most frequent words will be processed.
-         :param int batch_size: How many trainings-samples to process per batch
-         :param int embedding_size: Dimension of the computed embedding vectors.
-         :param int skip_window: How many words to consider left and right of the target-word
-         :param int num_sampled: Number of negative examples to sample when computing the nce_loss
-         :param int ngram_size: How large the ngrams (in which the target words are split) should be
-         :param int num_buckets: How many hash-buckets to use when hashing the ngrams to numbers
-         :param list(str) validation_words: A list of words. The similarity of these words to each other will be regularily computed to indicade the training-progress
     """
-    print(log_dir)
-    if not os.path.exists(log_dir):
-        os.makedirs(log_dir)
+    print(settings.log_dir)
+    if not os.path.exists(settings.log_dir):
+        os.makedirs(settings.log_dir)
 
     try:
-        inp.check_valid_path(corpus_path)
+        inp.check_valid_path(settings.corpus_path)
 
     except FileNotFoundError as e:
         print(": ".join(["ERROR", e.__str__()]))
         sys.exit(-1)  # EXIT
 
     else:
-        filename = inp.unarchive(corpus_path)
-
-
+        settings.corpus_path = inp.unarchive(settings.corpus_path)
 
     # Read the data into a list of strings.
     print("Reading dataset")
-    p = inp.InputProcessor(filename, skip_window,
-                           batch_size, vocabulary_size, ngram_size)
+    p = inp.InputProcessor(settings)
     p.preprocess()
 
     # Get the computation-graph and the associated operations
-    m = model.Model(p.batches, batch_size, embedding_size,
-                    vocabulary_size, validation_words, num_sampled, num_buckets)
+    m = model.Model(p.batches, settings)
 
     with tf.Session(graph=m.graph) as session:
         # Open a writer to write summaries.
-        writer = tf.summary.FileWriter(log_dir, session.graph)
+        writer = tf.summary.FileWriter(settings.log_dir, session.graph)
 
         # We must initialize the model before it can be used
         m.init()
         print('Initialized')
 
         average_loss = 0
-        for step in range(steps):
+        for step in range(settings.steps):
 
             # Define metadata variable.
             run_metadata = tf.RunMetadata()
@@ -112,7 +87,7 @@ def train(corpus_path, log_dir=DEFAULT_LOGPATH,
             # Add returned summaries to writer in each step.
             writer.add_summary(summary, step)
             # Add metadata to visualize the graph for the last run.
-            if step == (steps - 1):
+            if step == (settings.steps - 1):
                 writer.add_run_metadata(run_metadata, 'step%d' % step)
 
             if step % 2000 == 0:
@@ -123,11 +98,11 @@ def train(corpus_path, log_dir=DEFAULT_LOGPATH,
                 average_loss = 0
 
             # Note that this is expensive (~20% slowdown if computed every 500 steps)
-            if step % 10000 == 0 and validation_words:
+            if step % 10000 == 0 and settings.validation_words:
                 ftodtf.validation.print_similarity_check(
-                    m.validation, validation_words)
+                    m.validation, settings.validation_words_list)
 
         # Save the model for checkpoints.
-        m.save(session, os.path.join(log_dir, 'model.ckpt'))
+        m.save(session, os.path.join(settings.log_dir, 'model.ckpt'))
 
     writer.close()

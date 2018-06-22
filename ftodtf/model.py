@@ -7,16 +7,12 @@ import ftodtf.input as inp
 class Model():
     """Builds and represents the tensorflow computation graph. Exports all important operations via fields"""
 
-    def __init__(self, sample_generator_func, batch_size, embedding_size, vocabulary_size, validation_words, num_sampled, num_buckets):
+    def __init__(self, sample_generator_func, settings):
         """
         Constuctor for Model
 
-        :param sample_generator_func: A function returning a generator yielding training-batches. See: ftodtf.input.InputProcessor.batches
-        :param int batch_size: The size the trainings-batches (obtained via sample_generator_func) will have
-        :param int embedding_size: The size of the word-embedding-vectors to generate
-        :param int vocabulary_size: How many words are in the vocabulary.
-        :param list(str) validation_words: A list of words. The similarity between these words can than be computed using the self.similarity operation.
-        :param int num_sampled: How many negative samples to draw during nce_loss calculation
+        :param settings: An object encapsulating all the settings for the fasttext-model
+        :type settings: ftodtf.settings.FasttextSettings
         """
         self.graph = tf.Graph()
 
@@ -24,7 +20,7 @@ class Model():
 
             # create a dataset pipeline from the given sample-generator
             inputpipe = tf.data.Dataset.from_generator(sample_generator_func, output_types=(
-                tf.string, tf.int32), output_shapes=([batch_size, None], [batch_size, 1]))
+                tf.string, tf.int32), output_shapes=([settings.batch_size, None], [settings.batch_size, 1]))
             inputpipe = inputpipe.prefetch(1)
             iterator = inputpipe.make_initializable_iterator()
             self._dataset_init = iterator.initializer
@@ -38,22 +34,23 @@ class Model():
             # Create all Weights
             with tf.name_scope('embeddings'):
                 self.embeddings = tf.Variable(tf.random_uniform(
-                    [num_buckets-1, embedding_size], -1.0, 1.0))
+                    [settings.num_buckets-1, settings.embedding_size], -1.0, 1.0))
             with tf.name_scope('weights'):
                 nce_weights = tf.Variable(
-                    tf.truncated_normal([vocabulary_size, embedding_size], stddev=1.0 / math.sqrt(embedding_size)))
+                    tf.truncated_normal([settings.vocabulary_size, settings.embedding_size], stddev=1.0 / math.sqrt(settings.embedding_size)))
             with tf.name_scope('biases'):
-                nce_biases = tf.Variable(tf.zeros([vocabulary_size]))
+                nce_biases = tf.Variable(tf.zeros([settings.vocabulary_size]))
 
             # The vector for the placeholder-ngram (""). Will always be <0...> and therefore be irrelevant for reduce_sum
-            padding_vector = tf.constant(0.0, shape=[1, embedding_size])
+            padding_vector = tf.constant(
+                0.0, shape=[1, settings.embedding_size])
             # Set the first enty in embeddings (belonging to the padding-ngram) to <0,0,...>
             self.embeddings = tf.concat([padding_vector, self.embeddings], 0)
 
             # Bucket-hash the ngrams. Make sure "" is always hashed to 0
             # pylint: disable=E1101
             self._hasher = tf.contrib.lookup.index_table_from_tensor(
-                [""], num_oov_buckets=num_buckets-1, hasher_spec=tf.contrib.lookup.FastHashSpec, dtype=tf.string)
+                [""], num_oov_buckets=settings.num_buckets-1, hasher_spec=tf.contrib.lookup.FastHashSpec, dtype=tf.string)
 
             target_vectors = self._ngrams_to_vectors(train_inputs)
 
@@ -64,8 +61,8 @@ class Model():
                         biases=nce_biases,
                         labels=train_labels,
                         inputs=target_vectors,
-                        num_sampled=num_sampled,
-                        num_classes=vocabulary_size))
+                        num_sampled=settings.num_sampled,
+                        num_classes=settings.vocabulary_size))
 
             # Add the loss value as a scalar to summary.
             tf.summary.scalar('loss', self.loss)
@@ -81,8 +78,9 @@ class Model():
             # Create a saver to save the trained variables once training is over
             self._saver = tf.train.Saver()
 
-            if validation_words:
-                self.validation = self._validationop(validation_words)
+            if settings.validation_words:
+                self.validation = self._validationop(
+                    settings.validation_words_list)
 
     def _ngrams_to_vectors(self, ngrams):
         """ Convert a batch consisting of lists of ngrams for a word to a list of vectors. One vector for each word

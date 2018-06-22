@@ -4,6 +4,7 @@ from os.path import join
 import os
 
 import ftodtf.input as inp
+from ftodtf.settings import FasttextSettings
 
 
 TESTFILECONTENT = """dies ist eine test datei
@@ -12,6 +13,10 @@ bla bla bla
 """
 
 TESTFILENAME = join(gettempdir(), "ftodtftestfile")
+
+# Shared settings for all test-cases that are OK with the default values
+SETTINGS = FasttextSettings()
+SETTINGS.corpus_path = TESTFILENAME
 
 
 def setup_module():
@@ -34,7 +39,7 @@ def test_generate_ngram_per_word():
 
 
 def test_words_in_file():
-    ipp = inp.InputProcessor(TESTFILENAME, 2, 128, 5, 3)
+    ipp = inp.InputProcessor(SETTINGS)
     expected = TESTFILECONTENT.replace("\n", " ").split()
     actual = ipp._words_in_file()
     i = 0
@@ -45,7 +50,10 @@ def test_words_in_file():
 
 
 def test_preprocess():
-    ipp = inp.InputProcessor(TESTFILENAME, 2, 128, 5, 3)
+    seti = FasttextSettings()
+    seti.corpus_path = TESTFILENAME
+    seti.vocabulary_size = 5
+    ipp = inp.InputProcessor(seti)
     ipp.preprocess()
     assert ipp.wordcount["bla"] == 3
     assert len(ipp.wordcount) == 10
@@ -55,7 +63,7 @@ def test_preprocess():
 
 
 def test_string_samples():
-    ipp = inp.InputProcessor(TESTFILENAME, 1, 128, 5, 3)
+    ipp = inp.InputProcessor(SETTINGS)
     ipp.preprocess()
     samples = ipp.string_samples()
     sample = samples.__next__()
@@ -67,13 +75,13 @@ def test_string_samples():
 
 
 def test_string_samples2():
-    ipp = inp.InputProcessor(TESTFILENAME, 10, 128, 5, 3)
+    ipp = inp.InputProcessor(SETTINGS)
     samples = list(ipp.string_samples())
     assert len(samples) == 13
 
 
 def test_lookup_label():
-    ipp = inp.InputProcessor(TESTFILENAME, 1, 128, 5, 3)
+    ipp = inp.InputProcessor(SETTINGS)
     ipp.preprocess()
     testdata = [("bla", "ist")]
     labeled = list(ipp._lookup_label(testdata))
@@ -82,7 +90,7 @@ def test_lookup_label():
 
 
 def test_repeat():
-    ipp = inp.InputProcessor(TESTFILENAME, 1, 128, 5, 3)
+    ipp = inp.InputProcessor(SETTINGS)
     ipp.preprocess()
     testdata = ["test", "generator"]
     # a callable that returns a finite generator
@@ -96,7 +104,10 @@ def test_repeat():
 
 
 def test_batch():
-    ipp = inp.InputProcessor(TESTFILENAME, 1, 10, 5, 3)
+    seti = FasttextSettings()
+    seti.batch_size = 10
+    seti.corpus_path = TESTFILENAME
+    ipp = inp.InputProcessor(seti)
     ipp.preprocess()
     testdata = ["test", "generator"]
     # a callable that returns a finite generator
@@ -114,8 +125,7 @@ def test_ngrammize():
     wantedngs = ["*di", "die", "ies", "esi", "sis", "ist", "ste", "tei",
                  "ein", "int", "nte", "tes", "est", "st*", "*diesisteintest*"]
     gener = (x for x in [(word, 1337)])
-    ngramsize = 3
-    ipp = inp.InputProcessor(TESTFILENAME, 1, 10, 5, ngramsize)
+    ipp = inp.InputProcessor(SETTINGS)
     ipp.preprocess()
     out = ipp._ngrammize(gener)
     output = out.__next__()
@@ -126,7 +136,7 @@ def test_ngrammize():
 
 
 def test_equalize_batch():
-    ipp = inp.InputProcessor(TESTFILENAME, 1, 128, 5, 3)
+    ipp = inp.InputProcessor(SETTINGS)
     ipp.preprocess()
     samples = ipp.batches().__next__()[0]
     for i in range(len(samples)-1):
@@ -134,7 +144,7 @@ def test_equalize_batch():
 
 
 def test_batches():
-    ipp = inp.InputProcessor(TESTFILENAME, 1, 128, 5, 3)
+    ipp = inp.InputProcessor(SETTINGS)
     ipp.preprocess()
     batch = ipp.batches().__next__()
     print(batch)

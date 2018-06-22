@@ -1,5 +1,6 @@
 # pylint: disable=missing-docstring
 import ftodtf.model as model
+from ftodtf.settings import FasttextSettings
 
 
 def test_model():
@@ -8,8 +9,14 @@ def test_model():
     def batches():
         return [(x, [x]) for x in range(1, 128)]
 
-    m = model.Model(batches, 128, 300, 50000, [
-                    "one", "two", "king", "kingdom"], 16, 10000)
+    seti = FasttextSettings()
+    seti.batch_size = 128
+    seti.embedding_size = 300
+    seti.vocabulary_size = 50000
+    seti.validation_words = "one,two,king,kingdom"
+    seti.num_sampled = 16
+    seti.num_buckets = 10000
+    m = model.Model(batches, seti)
     assert m
     assert m.loss is not None
     assert m.merged is not None
