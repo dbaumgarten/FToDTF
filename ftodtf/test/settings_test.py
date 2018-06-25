@@ -19,6 +19,6 @@ def test_validate():
 def test_attribute_docstring():
     seti = ftodtf.settings.FasttextSettings()
     assert seti.attribute_docstring(
-        "corpus_path",) == "Path to the file containing text for training the model."
+        "corpus_path", False) == "Path to the file containing text for training the model."
     assert seti.attribute_docstring(
-        "num_sampled",) == "Number of negative examples to sample when computing the nce_loss."
+        "num_sampled", True) == "Number of negative examples to sample when computing the nce_loss. Default: 64"

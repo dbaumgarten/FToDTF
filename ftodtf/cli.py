@@ -4,17 +4,34 @@ import sys
 import ftodtf.training
 from ftodtf.settings import FasttextSettings
 
+PREPROCESS_REQUIRED_PARAMETERS = ["corpus_path"]
+TRAIN_REQUIRED_PARAMETERS = []
 SETTINGS = FasttextSettings()
+PARSER = argparse.ArgumentParser(
+    description="Unsupervised training of word-vectors.")
 
-PARSER = argparse.ArgumentParser(description="Set the hyperparameters for \
-                                             the distributed FastText model.")
+SUBPARSER = PARSER.add_subparsers(dest="command")
+PREPROCESS_PARSER = SUBPARSER.add_parser("preprocess")
+TRAIN_PARSER = SUBPARSER.add_parser("train")
 
 
-REQUIRED_PARAMETERS = ["corpus_path"]
+def add_arguments_to_parser(arglist, parser, required):
+    """ Adds arguments (obtained from the settings-class) to an agrparse-parser
 
-for parameter, default in vars(SETTINGS).items():
-    PARSER.add_argument("--"+parameter, type=type(default),
-                        help=SETTINGS.attribute_docstring(parameter), required=parameter in REQUIRED_PARAMETERS, default=default)
+    :param list(str) arglist: A list of strings representing the names of the flags to add
+    :param argparse.ArgumentParser parser: The parser to add the arguments to
+    :param list(str) required: A list of argument-names that are required for the command
+    """
+    for parameter, default in filter(lambda x: x[0] in arglist, vars(SETTINGS).items()):
+        parser.add_argument("--"+parameter, type=type(default),
+                            help=SETTINGS.attribute_docstring(parameter), required=parameter in required, default=default)
+
+
+add_arguments_to_parser(SETTINGS.preprocessing_settings(
+), PREPROCESS_PARSER, PREPROCESS_REQUIRED_PARAMETERS)
+
+add_arguments_to_parser(SETTINGS.training_settings(),
+                        TRAIN_PARSER, TRAIN_REQUIRED_PARAMETERS)
 
 
 def cli_main():
@@ -33,7 +50,12 @@ def cli_main():
         print(": ".join(["ERROR", err]))
         sys.exit(1)
 
-    ftodtf.training.train(SETTINGS)
+    if flags.command == "preprocess":
+        print("NOT IMPLEMENTED")
+    elif flags.command == "train":
+        ftodtf.training.train(SETTINGS)
+    else:
+        PARSER.print_help()
 
 
 if __name__ == "__main__":

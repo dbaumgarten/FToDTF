@@ -5,6 +5,7 @@ import re
 
 CURRENNT_PATH = os.getcwd()
 DEFAULT_LOGPATH = os.path.join(CURRENNT_PATH, "log")
+DEFAULT_BATCHES_FILE = os.path.join(CURRENNT_PATH, "batches.tfrecord")
 
 # pylint: disable=R0902,R0903
 
@@ -13,7 +14,8 @@ class FasttextSettings():
     """ This class contains all the settings for the fasttext-training and also handles things like validation. Use the attributes/variables of this class to set hyperparameters for the model.
 
     :ivar str corpus_path: Path to the file containing text for training the model.
-    :ivar str log_dir: Directory to write the generated files to. Default: <current-dir>/log.
+    :ivar str batches_file: The Filename for the file containing the training-batches. The file is written by the preprocess command and read by the train command.
+    :ivar str log_dir: Directory to write the generated files (e.g. the computed word-vectors) to.
     :ivar int steps: How many training steps to perform.
     :ivar int vocabulary_size: How many words the vocabulary will have. Only the vocabulary_size most frequent words will be processed.
     :ivar int batch_size: How many trainings-samples to process per batch.
@@ -27,6 +29,7 @@ class FasttextSettings():
 
     def __init__(self):
         self.corpus_path = ""
+        self.batches_file = DEFAULT_BATCHES_FILE
         self.log_dir = DEFAULT_LOGPATH
         self.steps = 100001
         self.vocabulary_size = 50000
@@ -37,6 +40,16 @@ class FasttextSettings():
         self.ngram_size = 3
         self.num_buckets = 100000
         self.validation_words = ""
+
+    @staticmethod
+    def preprocessing_settings():
+        """ Returns the names of the settings that are used for the preprocessing command """
+        return ["corpus_path", "batches_file", "vocabulary_size", "batch_size", "skip_window", "ngram_size", "num_buckets"]
+
+    @staticmethod
+    def training_settings():
+        """ Returns the names of the settings that are used for the training command """
+        return ["batches_file", "log_dir", "vocabulary_size", "batch_size", "embedding_size", "num_sampled", "num_buckets", "validation_words"]
 
     @property
     def validation_words_list(self):
@@ -55,10 +68,15 @@ class FasttextSettings():
         """
         pass
 
-    def attribute_docstring(self, attribute):
+    def attribute_docstring(self, attribute, include_defaults=True):
         """ Given the name of an attribute of this class, this function will return the docstring for the attribute.
 
         :param str attribute: The name of the attribute
         :returns: The docstring for the attribute
         """
-        return re.search("^.*:ivar \\w* "+attribute+": (.*)$", self.__doc__, re.MULTILINE).group(1)
+        docstring = re.search("^.*:ivar \\w* "+attribute +
+                              ": (.*)$", self.__doc__, re.MULTILINE).group(1)
+        if include_defaults:
+            docstring += " Default: "+str(vars(self)[attribute])
+
+        return docstring
