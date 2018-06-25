@@ -4,10 +4,25 @@ import tensorflow as tf
 import ftodtf.input as inp
 
 
+def parse_batch_func(batch_size):
+    def parse(batch):
+        features = {
+            "inputs": tf.VarLenFeature(tf.int64),
+            "labels": tf.FixedLenFeature([batch_size], tf.int64)
+        }
+        parsed = tf.parse_single_example(batch, features=features)
+        inputs = tf.sparse_tensor_to_dense(
+            parsed['inputs'], default_value=0)
+        inputs = tf.reshape(inputs, [batch_size, -1])
+        labels = tf.reshape(parsed["labels"], [batch_size, 1])
+        return inputs, labels
+    return parse
+
+
 class Model():
     """Builds and represents the tensorflow computation graph. Exports all important operations via fields"""
 
-    def __init__(self, sample_generator_func, settings):
+    def __init__(self, settings):
         """
         Constuctor for Model
 
@@ -18,11 +33,12 @@ class Model():
 
         with self.graph.as_default():
 
-            # create a dataset pipeline from the given sample-generator
-            inputpipe = tf.data.Dataset.from_generator(sample_generator_func, output_types=(
-                tf.string, tf.int32), output_shapes=([settings.batch_size, None], [settings.batch_size, 1]))
-            inputpipe = inputpipe.prefetch(1)
-            iterator = inputpipe.make_initializable_iterator()
+            inputpipe = tf.data.TFRecordDataset([settings.batches_file])
+            batches = inputpipe.map(parse_batch_func(
+                settings.batch_size), num_parallel_calls=4)
+            batches = batches.prefetch(1)
+
+            iterator = batches.make_initializable_iterator()
             self._dataset_init = iterator.initializer
             batch = iterator.get_next()
 
@@ -46,11 +62,6 @@ class Model():
                 0.0, shape=[1, settings.embedding_size])
             # Set the first enty in embeddings (belonging to the padding-ngram) to <0,0,...>
             self.embeddings = tf.concat([padding_vector, self.embeddings], 0)
-
-            # Bucket-hash the ngrams. Make sure "" is always hashed to 0
-            # pylint: disable=E1101
-            self._hasher = tf.contrib.lookup.index_table_from_tensor(
-                [""], num_oov_buckets=settings.num_buckets-1, hasher_spec=tf.contrib.lookup.FastHashSpec, dtype=tf.string)
 
             target_vectors = self._ngrams_to_vectors(train_inputs)
 
@@ -88,10 +99,8 @@ class Model():
         :param ngrams: A batch of lists of ngrams
         :returns: a batch of vectors
         """
-
-        hashed = self._hasher.lookup(ngrams)
         # Lookup the vector for each hashed value. The hash-value 0 (the value for the ngram "") will always et a 0-vector
-        looked_up = tf.nn.embedding_lookup(self.embeddings, hashed)
+        looked_up = tf.nn.embedding_lookup(self.embeddings, ngrams)
         # sum all ngram-vectors to get a word-vector
         summed = tf.reduce_sum(looked_up, 1)
         return summed

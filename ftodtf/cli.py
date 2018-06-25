@@ -3,6 +3,7 @@ import argparse
 import sys
 import ftodtf.training
 from ftodtf.settings import FasttextSettings
+import ftodtf.input
 
 PREPROCESS_REQUIRED_PARAMETERS = ["corpus_path"]
 TRAIN_REQUIRED_PARAMETERS = []
@@ -51,7 +52,9 @@ def cli_main():
         sys.exit(1)
 
     if flags.command == "preprocess":
-        print("NOT IMPLEMENTED")
+        ipp = ftodtf.input.InputProcessor(SETTINGS)
+        ipp.preprocess()
+        ipp.write_to_file(SETTINGS.batches_file)
     elif flags.command == "train":
         ftodtf.training.train(SETTINGS)
     else:

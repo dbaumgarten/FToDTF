@@ -8,6 +8,8 @@ from tempfile import gettempdir
 
 import numpy as np
 from nltk import ngrams
+import tensorflow as tf
+import fnvhash
 
 
 def check_valid_path(file_path):
@@ -139,13 +141,12 @@ class InputProcessor():
                 for word in words:
                     yield word
 
-    def check_subsampling(self, get_sample):
+    def _subsample(self, gen):
         """This generators checks if the target word or context word
-        should be ignored.
+        should be ignored, based on the word-frequency of the target-word.
+        :param gen: A generator yielding (string,string)-tuples
         """
-        sample_generator = get_sample
-        while True:
-            target_word, context_word = sample_generator.__next__()
+        for target_word, context_word in gen:
             if random.random() < self.drop_p_word[target_word] or \
                     random.random() < self.drop_p_word[context_word]:
                 # found frequent word, so ignore it
@@ -191,6 +192,13 @@ class InputProcessor():
             except KeyError:
                 pass
 
+    def _hash_ngrams(self, gen):
+
+        for targetngrams, contextword in gen:
+            hashed = [(fnvhash.fnv1a_64(x.encode('UTF-8')) % (
+                self.settings.num_buckets-1))+1 for x in targetngrams]
+            yield (hashed, contextword)
+
     @staticmethod
     def _repeat(generator_func):
         """ Repeat a given generator forever by recreating it whenever a StopIteration Exception occurs
@@ -209,7 +217,8 @@ class InputProcessor():
         """ Pack self.batch_size of training samples into a batch
             The output is a tuple of two lists, rather then a list of tuples, because this way we can treat
             the two lists as input-tensor and label-tensor.
-            The second list is al list of one-element-lists, because tf.nce_loss wants its tensor in that shape
+            The first List is a list of lists of ints.
+            The second list is al list of ints.
 
             :param samples: A generator yielding 2-tuples
             :returns: A generator yielding 2-tuples of self.batch_size long lists. The second lists consists of 1-element-ling lists.
@@ -220,7 +229,7 @@ class InputProcessor():
             for _ in range(0, self.settings.batch_size):
                 sample = samples.__next__()
                 inputs.append(sample[0])
-                labels.append([sample[1]])
+                labels.append(sample[1])
             yield inputs, labels
 
     def _ngrammize(self, gen):
@@ -233,9 +242,10 @@ class InputProcessor():
             yield (generate_ngram_per_word(entry[0], self.settings.ngram_size), entry[1])
 
     @staticmethod
-    def _equalize_batch(gen):
+    def _equalize_batch(padding, gen):
         """ Makes sure all n-gram arrays of a batch have the same length.
 
+        :param padding: The string/number/object that should be used to pad the entries of a batch
         :param gen: The generator to retrieve the batches from
         :returns: A generator yielding batches with equal-length ngram-lists
         """
@@ -244,15 +254,37 @@ class InputProcessor():
             for ngs in batch[0]:
                 longest = max(longest, len(ngs))
             for i in range(len(batch[0])):
-                batch[0][i] = pad_to_length(batch[0][i], longest)
+                batch[0][i] = pad_to_length(batch[0][i], longest, padding)
             yield batch
 
     def batches(self):
         """ Returns a generator the will yield an infinite amout of training-batches ready to feed into the model"""
-        return self._equalize_batch(
-            self._batch(
-                self._ngrammize(
-                    self._lookup_label(
-                        self.check_subsampling(
-                            self._repeat(
-                                self.string_samples))))))
+        return self._equalize_batch(0,
+                                    self._batch(
+                                        self._hash_ngrams(
+                                            self._ngrammize(
+                                                self._lookup_label(
+                                                    self._subsample(
+                                                        self.string_samples()))))))
+
+    def write_to_file(self, filename):
+        """ Writes the generated batches to a file.
+
+        :param str filename: The full path of the file into which the batches should be written
+        """
+        writer = tf.python_io.TFRecordWriter(filename)
+        for batch in self.batches():
+            flattened = []
+            for x in batch[0]:
+                for y in x:
+                    flattened.append(y)
+
+            features = {
+                "inputs": tf.train.Feature(int64_list=tf.train.Int64List(value=flattened)),
+                "labels": tf.train.Feature(int64_list=tf.train.Int64List(value=batch[1]))
+            }
+            example = tf.train.Example(
+                features=tf.train.Features(feature=features))
+            writer.write(example.SerializeToString())
+        writer.flush()
+        writer.close()

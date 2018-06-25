@@ -31,6 +31,8 @@ import ftodtf.input as inp
 import ftodtf.model as model
 import ftodtf.validation
 
+from tensorflow.python.client import timeline
+
 
 def train(settings):
     """ Run the fasttext training.
@@ -44,14 +46,11 @@ def train(settings):
         os.makedirs(settings.log_dir)
 
     try:
-        inp.check_valid_path(settings.corpus_path)
+        inp.check_valid_path(settings.batches_file)
 
     except FileNotFoundError as e:
         print(": ".join(["ERROR", e.__str__()]))
         sys.exit(-1)  # EXIT
-
-    else:
-        settings.corpus_path = inp.unarchive(settings.corpus_path)
 
     # Read the data into a list of strings.
     print("Reading dataset")
@@ -59,7 +58,7 @@ def train(settings):
     p.preprocess()
 
     # Get the computation-graph and the associated operations
-    m = model.Model(p.batches, settings)
+    m = model.Model(settings)
 
     with tf.Session(graph=m.graph) as session:
         # Open a writer to write summaries.
@@ -74,6 +73,7 @@ def train(settings):
 
             # Define metadata variable.
             run_metadata = tf.RunMetadata()
+            options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
 
             # We perform one update step by evaluating the optimizer op (including it
             # in the list of returned values for session.run()
@@ -81,8 +81,15 @@ def train(settings):
             # Feed metadata variable to session for visualizing the graph in TensorBoard.
             _, summary, loss_val = session.run(
                 [m.optimizer, m.merged, m.loss],
-                run_metadata=run_metadata)
+                run_metadata=run_metadata,
+                options=options)
             average_loss += loss_val
+
+            # Create the Timeline object, and write it to a json file
+            fetched_timeline = timeline.Timeline(run_metadata.step_stats)
+            chrome_trace = fetched_timeline.generate_chrome_trace_format()
+            with open('timeline_01.json', 'w') as f:
+                f.write(chrome_trace)
 
             # Add returned summaries to writer in each step.
             writer.add_summary(summary, step)

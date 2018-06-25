@@ -49,7 +49,7 @@ class FasttextSettings():
     @staticmethod
     def training_settings():
         """ Returns the names of the settings that are used for the training command """
-        return ["batches_file", "log_dir", "vocabulary_size", "batch_size", "embedding_size", "num_sampled", "num_buckets", "validation_words"]
+        return ["batches_file", "log_dir", "steps", "vocabulary_size", "batch_size", "embedding_size", "num_sampled", "num_buckets", "validation_words", "corpus_path"]
 
     @property
     def validation_words_list(self):
