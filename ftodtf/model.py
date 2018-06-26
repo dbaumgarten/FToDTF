@@ -33,7 +33,8 @@ class Model():
 
         with self.graph.as_default():
 
-            inputpipe = tf.data.TFRecordDataset([settings.batches_file])
+            inputpipe = tf.data.TFRecordDataset(
+                [settings.batches_file]).repeat()
             batches = inputpipe.map(parse_batch_func(
                 settings.batch_size), num_parallel_calls=4)
             batches = batches.prefetch(1)
@@ -50,18 +51,16 @@ class Model():
             # Create all Weights
             with tf.name_scope('embeddings'):
                 self.embeddings = tf.Variable(tf.random_uniform(
-                    [settings.num_buckets-1, settings.embedding_size], -1.0, 1.0))
+                    [settings.num_buckets, settings.embedding_size], -1.0, 1.0))
             with tf.name_scope('weights'):
                 nce_weights = tf.Variable(
                     tf.truncated_normal([settings.vocabulary_size, settings.embedding_size], stddev=1.0 / math.sqrt(settings.embedding_size)))
             with tf.name_scope('biases'):
                 nce_biases = tf.Variable(tf.zeros([settings.vocabulary_size]))
 
-            # The vector for the placeholder-ngram (""). Will always be <0...> and therefore be irrelevant for reduce_sum
-            padding_vector = tf.constant(
-                0.0, shape=[1, settings.embedding_size])
             # Set the first enty in embeddings (belonging to the padding-ngram) to <0,0,...>
-            self.embeddings = tf.concat([padding_vector, self.embeddings], 0)
+            self.mask_padding_zero_op = tf.scatter_update(
+                self.embeddings, 0, tf.zeros([settings.embedding_size], dtype=tf.float32))
 
             target_vectors = self._ngrams_to_vectors(train_inputs)
 
@@ -100,10 +99,11 @@ class Model():
         :returns: a batch of vectors
         """
         # Lookup the vector for each hashed value. The hash-value 0 (the value for the ngram "") will always et a 0-vector
-        looked_up = tf.nn.embedding_lookup(self.embeddings, ngrams)
-        # sum all ngram-vectors to get a word-vector
-        summed = tf.reduce_sum(looked_up, 1)
-        return summed
+        with tf.control_dependencies([self.mask_padding_zero_op]):
+            looked_up = tf.nn.embedding_lookup(self.embeddings, ngrams)
+            # sum all ngram-vectors to get a word-vector
+            summed = tf.reduce_sum(looked_up, 1)
+            return summed
 
     def _validationop(self, compare):
         """This Operation is used to regularily computed the words closest to some input words. This way a human can judge if the training is really making usefull progress
