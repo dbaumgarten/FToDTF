@@ -31,6 +31,7 @@ import ftodtf.input as inp
 import ftodtf.model as model
 import ftodtf.validation
 
+# pylint: disable=E0611
 from tensorflow.python.client import timeline
 
 
@@ -73,7 +74,10 @@ def train(settings):
 
             # Define metadata variable.
             run_metadata = tf.RunMetadata()
-            options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
+            options = None
+            if settings.profile:
+                # pylint: disable=E1101
+                options = tf.RunOptions(trace_level=tf.RunOptions.FULL_TRACE)
 
             # We perform one update step by evaluating the optimizer op (including it
             # in the list of returned values for session.run()
@@ -86,10 +90,12 @@ def train(settings):
             average_loss += loss_val
 
             # Create the Timeline object, and write it to a json file
-            fetched_timeline = timeline.Timeline(run_metadata.step_stats)
-            chrome_trace = fetched_timeline.generate_chrome_trace_format()
-            with open('timeline_01.json', 'w') as f:
-                f.write(chrome_trace)
+            if settings.profile:
+                # pylint: disable=E1101
+                fetched_timeline = timeline.Timeline(run_metadata.step_stats)
+                chrome_trace = fetched_timeline.generate_chrome_trace_format()
+                with open('profile.json', 'w') as f:
+                    f.write(chrome_trace)
 
             # Add returned summaries to writer in each step.
             writer.add_summary(summary, step)

@@ -25,6 +25,7 @@ class FasttextSettings():
     :ivar int ngram_size: How large the ngrams (in which the target words are split) should be.
     :ivar int num_buckets: How many hash-buckets to use when hashing the ngrams to numbers.
     :ivar str validation_words: A string of comma-seperated words. The similarity of these words to each other will be regularily computed and printed to indicade the progress of the training.
+    :ivar boolean profile: If set to True tensorflow will profile the graph-execution and writer results to ./profile.json.
     """
 
     def __init__(self):
@@ -40,6 +41,7 @@ class FasttextSettings():
         self.ngram_size = 3
         self.num_buckets = 100000
         self.validation_words = ""
+        self.profile = False
 
     @staticmethod
     def preprocessing_settings():
@@ -49,7 +51,7 @@ class FasttextSettings():
     @staticmethod
     def training_settings():
         """ Returns the names of the settings that are used for the training command """
-        return ["batches_file", "log_dir", "steps", "vocabulary_size", "batch_size", "embedding_size", "num_sampled", "num_buckets", "validation_words", "corpus_path"]
+        return ["batches_file", "log_dir", "steps", "vocabulary_size", "batch_size", "embedding_size", "num_sampled", "num_buckets", "validation_words", "corpus_path", "profile"]
 
     @property
     def validation_words_list(self):
