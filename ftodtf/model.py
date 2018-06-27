@@ -5,7 +5,16 @@ import ftodtf.input as inp
 
 
 def parse_batch_func(batch_size):
+    """ Returns a function that can parse a batch from a tfrecord-entry
+
+    :param int batch_size: How many samples are in a batch
+    """
     def parse(batch):
+        """ Parses a tfrecord-entry into a usable batch. To be used with tf.data.Dataset.map
+
+        :params batch: The tfrecord-entry to parse
+        :returns: A batch ready to feed into the model
+        """
         features = {
             "inputs": tf.VarLenFeature(tf.int64),
             "labels": tf.FixedLenFeature([batch_size], tf.int64)

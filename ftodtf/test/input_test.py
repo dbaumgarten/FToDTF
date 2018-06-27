@@ -5,6 +5,7 @@ import os
 
 import ftodtf.input as inp
 from ftodtf.settings import FasttextSettings
+import fnvhash
 
 
 TESTFILECONTENT = """dies ist eine test datei
@@ -13,10 +14,12 @@ bla bla bla
 """
 
 TESTFILENAME = join(gettempdir(), "ftodtftestfile")
+TESTBATCHESFILENAME = join(gettempdir(), "ftodtftestbatchfile")
 
 # Shared settings for all test-cases that are OK with the default values
 SETTINGS = FasttextSettings()
 SETTINGS.corpus_path = TESTFILENAME
+SETTINGS.batches_file = TESTBATCHESFILENAME
 
 
 def setup_module():
@@ -97,10 +100,33 @@ def test_repeat():
 
     def generator_callable():
         return (x for x in testdata)
-    repeated = ipp._repeat(generator_callable)
-    for _ in range(20):
+    repeated = ipp._repeat(0, generator_callable)
+    assert len(list(repeated)) == 2
+
+
+def test_repeat2():
+    ipp = inp.InputProcessor(SETTINGS)
+    ipp.preprocess()
+    testdata = ["test", "generator"]
+    # a callable that returns a finite generator
+
+    def generator_callable():
+        return (x for x in testdata)
+    repeated = ipp._repeat(2, generator_callable)
+    assert len(list(repeated)) == 6
+
+
+def test_repeat3():
+    ipp = inp.InputProcessor(SETTINGS)
+    ipp.preprocess()
+    testdata = ["test", "generator"]
+    # a callable that returns a finite generator
+
+    def generator_callable():
+        return (x for x in testdata)
+    repeated = ipp._repeat(-1, generator_callable)
+    for i in range(20):
         repeated.__next__()
-        # if we can get 20 elements from a two element generator repeat() seems to work
 
 
 def test_batch():
@@ -114,7 +140,7 @@ def test_batch():
 
     def generator_callable():
         return (x for x in testdata)
-    batchgen = ipp._batch(ipp._repeat(generator_callable))
+    batchgen = ipp._batch(ipp._repeat(-1, generator_callable))
     batch = batchgen.__next__()
     assert len(batch[0]) == 10
     assert len(batch[1]) == 10
@@ -138,18 +164,40 @@ def test_ngrammize():
 def test_equalize_batch():
     ipp = inp.InputProcessor(SETTINGS)
     ipp.preprocess()
-    samples = ipp.batches().__next__()[0]
+    samples = ipp.batches(-1).__next__()[0]
     for i in range(len(samples)-1):
         assert len(samples[i]) == len(samples[i+1])
+
+
+def test_hash_ngrams():
+    testdata = [(["bla"], 1337)]
+    wantedhash = (fnvhash.fnv1a_64("bla".encode("UTF-8")) %
+                  (SETTINGS.num_buckets-1))+1
+    ipp = inp.InputProcessor(SETTINGS)
+    ipp.preprocess()
+    hashed = ipp._hash_ngrams(testdata)
+    batch = hashed.__next__()
+    assert batch[0][0] == wantedhash
+    assert len(batch[0]) == 1
+    assert batch[1] == 1337
 
 
 def test_batches():
     ipp = inp.InputProcessor(SETTINGS)
     ipp.preprocess()
-    batch = ipp.batches().__next__()
+    batch = ipp.batches(-1).__next__()
     print(batch)
     assert len(batch) == 2
     assert len(batch[0]) == 128
     assert len(batch[1]) == 128
     assert isinstance(batch[0][0], list)
-    assert isinstance(batch[1][0][0], int)
+    assert isinstance(batch[1][0], int)
+
+
+def test_write_batches_to_file():
+    ipp = inp.InputProcessor(SETTINGS)
+    ipp.preprocess()
+    batches = ipp.batches(100000)
+    inp.write_batches_to_file(batches, SETTINGS.batches_file)
+    filesize = os.stat(SETTINGS.batches_file).st_size
+    assert filesize > 100

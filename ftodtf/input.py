@@ -108,6 +108,30 @@ def hash_string_list(strings, buckets, offset=0):
     return [(fnvhash.fnv1a_64(x.encode('UTF-8')) % (buckets))+offset for x in strings]
 
 
+def write_batches_to_file(batchgenerator, filename):
+    """ Writes the batches obtained from batchgenerator to a file.
+
+    :param batchgenerator: A generator yielding training-batches
+    :param str filename: The full path of the file into which the batches should be written
+    """
+    writer = tf.python_io.TFRecordWriter(filename)
+    for batch in batchgenerator:
+        flattened = []
+        for x in batch[0]:
+            for y in x:
+                flattened.append(y)
+
+        features = {
+            "inputs": tf.train.Feature(int64_list=tf.train.Int64List(value=flattened)),
+            "labels": tf.train.Feature(int64_list=tf.train.Int64List(value=batch[1]))
+        }
+        example = tf.train.Example(
+            features=tf.train.Features(feature=features))
+        writer.write(example.SerializeToString())
+    writer.flush()
+    writer.close()
+
+
 class InputProcessor():
     """Handles the creation of training-examble-batches from the raw training-text"""
 
@@ -290,25 +314,3 @@ class InputProcessor():
                                                     self._subsample(
                                                         self._repeat(passes-1,
                                                                      self.string_samples)))))))
-
-    def write_to_file(self, filename):
-        """ Writes the generated batches to a file.
-
-        :param str filename: The full path of the file into which the batches should be written
-        """
-        writer = tf.python_io.TFRecordWriter(filename)
-        for batch in self.batches():
-            flattened = []
-            for x in batch[0]:
-                for y in x:
-                    flattened.append(y)
-
-            features = {
-                "inputs": tf.train.Feature(int64_list=tf.train.Int64List(value=flattened)),
-                "labels": tf.train.Feature(int64_list=tf.train.Int64List(value=batch[1]))
-            }
-            example = tf.train.Example(
-                features=tf.train.Features(feature=features))
-            writer.write(example.SerializeToString())
-        writer.flush()
-        writer.close()

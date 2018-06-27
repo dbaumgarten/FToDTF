@@ -13,7 +13,12 @@ The programm is now installed system-wide. You can now import the package ftodtf
 - Because you specified ```-e``` when running ```pip3 install``` you can modify the project files and your installation will still always be up-to-date (symlink-magic!).
 
 ## Running
-After installing just run ```fasttext --corpus-path <your-training-data>``` in your console
+After installing just run  
+```
+fasttext preprocess --corpus_path <your-training-data>
+fasttext train
+```  
+in your console
 
 ## Testdata
 If you need some text to try this programm out, try: http://mattmahoney.net/dc/text8.zip

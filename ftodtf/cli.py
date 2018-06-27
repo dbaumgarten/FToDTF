@@ -54,7 +54,8 @@ def cli_main():
     if flags.command == "preprocess":
         ipp = ftodtf.input.InputProcessor(SETTINGS)
         ipp.preprocess()
-        ipp.write_to_file(SETTINGS.batches_file)
+        ftodtf.input.write_batches_to_file(
+            ipp.batches(), SETTINGS.batches_file)
     elif flags.command == "train":
         ftodtf.training.train(SETTINGS)
     else:
