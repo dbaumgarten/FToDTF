@@ -6,9 +6,6 @@ from ftodtf.settings import FasttextSettings
 def test_model():
     # We have no idea, if the graph is correct, but at least the function ran without errors and returned something
 
-    def batches():
-        return [(x, [x]) for x in range(1, 128)]
-
     seti = FasttextSettings()
     seti.batch_size = 128
     seti.embedding_size = 300

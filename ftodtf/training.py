@@ -53,11 +53,6 @@ def train(settings):
         print(": ".join(["ERROR", e.__str__()]))
         sys.exit(-1)  # EXIT
 
-    # Read the data into a list of strings.
-    print("Reading dataset")
-    p = inp.InputProcessor(settings)
-    p.preprocess()
-
     # Get the computation-graph and the associated operations
     m = model.Model(settings)
 

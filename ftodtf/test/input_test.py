@@ -125,7 +125,7 @@ def test_repeat3():
     def generator_callable():
         return (x for x in testdata)
     repeated = ipp._repeat(-1, generator_callable)
-    for i in range(20):
+    for _ in range(20):
         repeated.__next__()
 
 
