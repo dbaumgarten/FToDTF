@@ -98,6 +98,16 @@ def pad_to_length(li, length, pad=""):
     return li
 
 
+def hash_string_list(strings, buckets, offset=0):
+    """ Hashes each element in a list of strings using the FNVa1 algorithm.
+
+    :param list(str) strings: A list of strings to hash.
+    :param int buckets: How many different hash-values to produce maximally. (all Hashes are mod buckets)
+    :param int offset: The smallest possible hash value. Can be used to make hashvalues start at an other number then 0
+    """
+    return [(fnvhash.fnv1a_64(x.encode('UTF-8')) % (buckets))+offset for x in strings]
+
+
 class InputProcessor():
     """Handles the creation of training-examble-batches from the raw training-text"""
 
@@ -193,25 +203,35 @@ class InputProcessor():
                 pass
 
     def _hash_ngrams(self, gen):
+        """ Hashes the list of ngrams for each received ([str],?)-tuple and yields ([int],?) instead
 
+        :param gen: The generator to receive the input-tuples from
+        """
         for targetngrams, contextword in gen:
-            hashed = [(fnvhash.fnv1a_64(x.encode('UTF-8')) % (
-                self.settings.num_buckets-1))+1 for x in targetngrams]
+            # Hash the ngrams but reserve hashvalue 0 for the padding
+            hashed = hash_string_list(
+                targetngrams, self.settings.num_buckets-1, 1)
             yield (hashed, contextword)
 
     @staticmethod
-    def _repeat(generator_func):
+    def _repeat(times, generator_func):
         """ Repeat a given generator forever by recreating it whenever a StopIteration Exception occurs
 
+            .param int times: How many times to repeat the input-generator after it threw it's first StopIteration. Special-cases: 0 = Never, -1=forever.
             :param generator_func: A function without arguments returning a generator
             :returns: A new inifinite generator
         """
+        iterationnr = 0
         g = generator_func()
         while True:
             try:
                 yield g.__next__()
             except StopIteration:
-                g = generator_func()
+                if times < 0 or iterationnr < times:
+                    iterationnr += 1
+                    g = generator_func()
+                else:
+                    raise StopIteration
 
     def _batch(self, samples):
         """ Pack self.batch_size of training samples into a batch
@@ -257,15 +277,19 @@ class InputProcessor():
                 batch[0][i] = pad_to_length(batch[0][i], longest, padding)
             yield batch
 
-    def batches(self):
-        """ Returns a generator the will yield an infinite amout of training-batches ready to feed into the model"""
+    def batches(self, passes=1):
+        """ Returns a generator the will yield an infinite amout of training-batches ready to feed into the model
+
+        :param int repetitions: How many passes over the input data should be done. Default: 1. 0 will repeat the input forever.
+        """
         return self._equalize_batch(0,
                                     self._batch(
                                         self._hash_ngrams(
                                             self._ngrammize(
                                                 self._lookup_label(
                                                     self._subsample(
-                                                        self.string_samples()))))))
+                                                        self._repeat(passes-1,
+                                                                     self.string_samples)))))))
 
     def write_to_file(self, filename):
         """ Writes the generated batches to a file.

@@ -90,7 +90,7 @@ class Model():
 
             if settings.validation_words:
                 self.validation = self._validationop(
-                    settings.validation_words_list)
+                    settings.validation_words_list, settings.num_buckets)
 
     def _ngrams_to_vectors(self, ngrams):
         """ Convert a batch consisting of lists of ngrams for a word to a list of vectors. One vector for each word
@@ -105,10 +105,11 @@ class Model():
             summed = tf.reduce_sum(looked_up, 1)
             return summed
 
-    def _validationop(self, compare):
+    def _validationop(self, compare, num_buckets):
         """This Operation is used to regularily computed the words closest to some input words. This way a human can judge if the training is really making usefull progress
 
         :param list(str) compare: A list of strings representing the words to find similar words of
+        :param int num_buckets: The number of hash-buckets used when hashing ngrams
         """
 
         # ngrammize and pad the words
@@ -117,9 +118,10 @@ class Model():
         for ng in ngrams:
             maxlen = max(maxlen, len(ng))
         for i, _ in enumerate(ngrams):
-            ngrams[i] = inp.pad_to_length(ngrams[i], maxlen)
+            ngrams[i] = inp.hash_string_list(ngrams[i], num_buckets-1, 1)
+            ngrams[i] = inp.pad_to_length(ngrams[i], maxlen, pad=0)
 
-        dataset = tf.constant(ngrams, dtype=tf.string,
+        dataset = tf.constant(ngrams, dtype=tf.int64,
                               shape=[len(compare), maxlen])
         vectors = self._ngrams_to_vectors(dataset)
 
