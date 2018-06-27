@@ -40,6 +40,25 @@
 <span id="ftodtf-cli-module"></span><h2>ftodtf.cli module<a class="headerlink" href="#module-ftodtf.cli" title="Permalink to this headline">¶</a></h2>
 <p>This module handles parsing of cli-flags and then calls the needed function from the library</p>
 <dl class="function">
+<dt id="ftodtf.cli.add_arguments_to_parser">
+<code class="descclassname">ftodtf.cli.</code><code class="descname">add_arguments_to_parser</code><span class="sig-paren">(</span><em>arglist</em>, <em>parser</em>, <em>required</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.cli.add_arguments_to_parser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Adds arguments (obtained from the settings-class) to an agrparse-parser</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>arglist</strong> (<em>list</em><em>(</em><em>str</em><em>)</em>) – A list of strings representing the names of the flags to add</li>
+<li><strong>parser</strong> (<em>argparse.ArgumentParser</em>) – The parser to add the arguments to</li>
+<li><strong>required</strong> (<em>list</em><em>(</em><em>str</em><em>)</em>) – A list of argument-names that are required for the command</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="ftodtf.cli.cli_main">
 <code class="descclassname">ftodtf.cli.</code><code class="descname">cli_main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.cli.cli_main" title="Permalink to this definition">¶</a></dt>
 <dd><p>Program entry point.</p>
@@ -65,15 +84,16 @@
 </table>
 <dl class="method">
 <dt id="ftodtf.input.InputProcessor.batches">
-<code class="descname">batches</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.input.InputProcessor.batches" title="Permalink to this definition">¶</a></dt>
+<code class="descname">batches</code><span class="sig-paren">(</span><em>passes=1</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.input.InputProcessor.batches" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a generator the will yield an infinite amout of training-batches ready to feed into the model</p>
-</dd></dl>
-
-<dl class="method">
-<dt id="ftodtf.input.InputProcessor.check_subsampling">
-<code class="descname">check_subsampling</code><span class="sig-paren">(</span><em>get_sample</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.input.InputProcessor.check_subsampling" title="Permalink to this definition">¶</a></dt>
-<dd><p>This generators checks if the target word or context word
-should be ignored.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>repetitions</strong> (<em>int</em>) – How many passes over the input data should be done. Default: 1. 0 will repeat the input forever.</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="method">
@@ -132,6 +152,25 @@ This is the same process as described in the fasttext paper.</p>
 </td>
 </tr>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">A generator which yields ngrams.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="ftodtf.input.hash_string_list">
+<code class="descclassname">ftodtf.input.</code><code class="descname">hash_string_list</code><span class="sig-paren">(</span><em>strings</em>, <em>buckets</em>, <em>offset=0</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.input.hash_string_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Hashes each element in a list of strings using the FNVa1 algorithm.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>strings</strong> (<em>list</em><em>(</em><em>str</em><em>)</em>) – A list of strings to hash.</li>
+<li><strong>buckets</strong> (<em>int</em>) – How many different hash-values to produce maximally. (all Hashes are mod buckets)</li>
+<li><strong>offset</strong> (<em>int</em>) – The smallest possible hash value. Can be used to make hashvalues start at an other number then 0</li>
+</ul>
 </td>
 </tr>
 </tbody>
@@ -206,13 +245,31 @@ unarchive functions.</p>
 </table>
 </dd></dl>
 
+<dl class="function">
+<dt id="ftodtf.input.write_batches_to_file">
+<code class="descclassname">ftodtf.input.</code><code class="descname">write_batches_to_file</code><span class="sig-paren">(</span><em>batchgenerator</em>, <em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.input.write_batches_to_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Writes the batches obtained from batchgenerator to a file.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>batchgenerator</strong> – A generator yielding training-batches</li>
+<li><strong>filename</strong> (<em>str</em>) – The full path of the file into which the batches should be written</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </div>
 <div class="section" id="module-ftodtf.model">
 <span id="ftodtf-model-module"></span><h2>ftodtf.model module<a class="headerlink" href="#module-ftodtf.model" title="Permalink to this headline">¶</a></h2>
 <p>This module handles the building of the tf execution graph</p>
 <dl class="class">
 <dt id="ftodtf.model.Model">
-<em class="property">class </em><code class="descclassname">ftodtf.model.</code><code class="descname">Model</code><span class="sig-paren">(</span><em>sample_generator_func</em>, <em>settings</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.model.Model" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">ftodtf.model.</code><code class="descname">Model</code><span class="sig-paren">(</span><em>settings</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.model.Model" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Builds and represents the tensorflow computation graph. Exports all important operations via fields</p>
 <p>Constuctor for Model</p>
@@ -255,6 +312,20 @@ Must be called inside a tf.Session</p>
 
 </dd></dl>
 
+<dl class="function">
+<dt id="ftodtf.model.parse_batch_func">
+<code class="descclassname">ftodtf.model.</code><code class="descname">parse_batch_func</code><span class="sig-paren">(</span><em>batch_size</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.model.parse_batch_func" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a function that can parse a batch from a tfrecord-entry</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>batch_size</strong> (<em>int</em>) – How many samples are in a batch</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </div>
 <div class="section" id="module-ftodtf.settings">
 <span id="ftodtf-settings-module"></span><h2>ftodtf.settings module<a class="headerlink" href="#module-ftodtf.settings" title="Permalink to this headline">¶</a></h2>
@@ -270,7 +341,8 @@ Must be called inside a tf.Session</p>
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
 <li><strong>corpus_path</strong> (<em>str</em>) – Path to the file containing text for training the model.</li>
-<li><strong>log_dir</strong> (<em>str</em>) – Directory to write the generated files to. Default: &lt;current-dir&gt;/log.</li>
+<li><strong>batches_file</strong> (<em>str</em>) – The Filename for the file containing the training-batches. The file is written by the preprocess command and read by the train command.</li>
+<li><strong>log_dir</strong> (<em>str</em>) – Directory to write the generated files (e.g. the computed word-vectors) to.</li>
 <li><strong>steps</strong> (<em>int</em>) – How many training steps to perform.</li>
 <li><strong>vocabulary_size</strong> (<em>int</em>) – How many words the vocabulary will have. Only the vocabulary_size most frequent words will be processed.</li>
 <li><strong>batch_size</strong> (<em>int</em>) – How many trainings-samples to process per batch.</li>
@@ -280,6 +352,7 @@ Must be called inside a tf.Session</p>
 <li><strong>ngram_size</strong> (<em>int</em>) – How large the ngrams (in which the target words are split) should be.</li>
 <li><strong>num_buckets</strong> (<em>int</em>) – How many hash-buckets to use when hashing the ngrams to numbers.</li>
 <li><strong>validation_words</strong> (<em>str</em>) – A string of comma-seperated words. The similarity of these words to each other will be regularily computed and printed to indicade the progress of the training.</li>
+<li><strong>profile</strong> (<em>boolean</em>) – If set to True tensorflow will profile the graph-execution and writer results to ./profile.json.</li>
 </ul>
 </td>
 </tr>
@@ -287,7 +360,7 @@ Must be called inside a tf.Session</p>
 </table>
 <dl class="method">
 <dt id="ftodtf.settings.FasttextSettings.attribute_docstring">
-<code class="descname">attribute_docstring</code><span class="sig-paren">(</span><em>attribute</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.settings.FasttextSettings.attribute_docstring" title="Permalink to this definition">¶</a></dt>
+<code class="descname">attribute_docstring</code><span class="sig-paren">(</span><em>attribute</em>, <em>include_defaults=True</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.settings.FasttextSettings.attribute_docstring" title="Permalink to this definition">¶</a></dt>
 <dd><p>Given the name of an attribute of this class, this function will return the docstring for the attribute.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -299,6 +372,18 @@ Must be called inside a tf.Session</p>
 </tr>
 </tbody>
 </table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="ftodtf.settings.FasttextSettings.preprocessing_settings">
+<em class="property">static </em><code class="descname">preprocessing_settings</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.settings.FasttextSettings.preprocessing_settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the names of the settings that are used for the preprocessing command</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="ftodtf.settings.FasttextSettings.training_settings">
+<em class="property">static </em><code class="descname">training_settings</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.settings.FasttextSettings.training_settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the names of the settings that are used for the training command</p>
 </dd></dl>
 
 <dl class="method">
