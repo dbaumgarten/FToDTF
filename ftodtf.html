@@ -353,6 +353,7 @@ Must be called inside a tf.Session</p>
 <li><strong>num_buckets</strong> (<em>int</em>) – How many hash-buckets to use when hashing the ngrams to numbers.</li>
 <li><strong>validation_words</strong> (<em>str</em>) – A string of comma-seperated words. The similarity of these words to each other will be regularily computed and printed to indicade the progress of the training.</li>
 <li><strong>profile</strong> (<em>boolean</em>) – If set to True tensorflow will profile the graph-execution and writer results to ./profile.json.</li>
+<li><strong>learnrate</strong> (<em>float</em>) – The starting learnrate for the training. The actual learnrate will lineraily decrease to be 0 when the specified amount of training-steps is reached.</li>
 </ul>
 </td>
 </tr>
