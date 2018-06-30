@@ -86,10 +86,19 @@ class Model():
             # Add the loss value as a scalar to summary.
             tf.summary.scalar('loss', self.loss)
 
-            # Construct the SGD optimizer using a learning rate of 1.0.
+            # Keep track of how many iterations we have already done
+            step_nr = tf.Variable(0, trainable=False, name='step_nr')
+
+            # Learnrate starts at settings.learnrates and will reach ~0 when the training is finished.
+            decaying_learn_rate = settings.learnrate * \
+                (1 - (step_nr/settings.steps))
+
+            # Add the learnrate to the summary
+            tf.summary.scalar('learnrate', decaying_learn_rate)
+
             with tf.name_scope('optimizer'):
                 self.optimizer = tf.train.GradientDescentOptimizer(
-                    1).minimize(self.loss)
+                    decaying_learn_rate).minimize(self.loss, global_step=step_nr)
 
             # Merge all summaries.
             self.merged = tf.summary.merge_all()
