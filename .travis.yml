@@ -4,6 +4,7 @@ python:
 stages:
   - test
   - docs
+  - docker
 jobs:
   include:
     - stage: test
@@ -31,3 +32,13 @@ jobs:
         keep-history: true
         on:
           branch: master
+    - stage: docker
+      sudo: required
+      services:
+        - docker
+      script:
+        - docker build -t fasttext .
+      after_success:
+        - "curl -H \"Content-Type: application/json\" --data '{\"source_type\": \"Branch\", \"source_name\": \"master\"}' -X POST https://registry.hub.docker.com/u/dbaumgarten/ftodtf/trigger/$DOCKERHUB_TOKEN/"
+      on:
+        branch: master
