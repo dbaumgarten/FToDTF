@@ -28,13 +28,32 @@ sich um die gewünschten Worteinbettungen, welche man trainiert haben möchte.
 
 #### Implementierung
 
-Als Implementierungsvorlage dient das skip-gram Beispiel [2]. Dabei wird die Vorlage modularisiert und erhebliche 
-Veränderung an dem TensorFlow-Graphen vorgenommen. So entsprechen die Eingabewerte den Tensor-Placeholder und die n-gram/ 
-Kontext-Wort Matrix den Tensor-Variablen. Die Tensor-Variablen stellen veränderliche Bestandteile des Graphen dar und 
-werden als Kanten aufgefasst. Wie bereits erwähnt dient als Verlustfunktion die negative Log-Likelihood-Funktion in Kombination 
-mit dem negative Sampling. Das Gradientenverfahren wird über die Klasse GradientDescentOptimizer realisiert. Sowohl die Verlustfunktion als auch
-das Gradientenverfahren stellen in dem Tensorflow-Graphen die Operationen (Knoten) dar. Hyperparameter wie Lernrate, Featuregröße (Anzahl Neuronen/Spalten der Matrizen), n-gram Matrixgröße (_K_ Zeilen), Batchgröße, Anzahl der Kontext-Wörter , Anzahl der n-gramme, ...,
-sollen beim Aufruf des Programs durch den Benutzer einstellbar sein. 
+Als Implementierungsvorlage dient das skip-gram Beispiel [2]. 
+
+
+Datenvorverarbeitung:
+
+1. Ein Trainingcorpus wird über den Parameter --corpus_path an das Programm übergeben. Zusätzlich können weitere Parameter
+(siehe settings.py) übergeben werden. Die Defaultwerte entsprechen den Empfehlungen aus dem Paper [4]. Im Preprocessing
+wird zuerst entschieden ob der Trainingkorpus mit mehr als einem Prozessor bearbeitet werden soll. Dabei orientiert sich das
+Programm an der Größe ( > 100MB --> multiprocessing) des Corpusfiles. Mithilfe des NLTK-Modules wird der Text in seine
+einzelnen Sätze zerlegt. Anschließend werden die Sätze bereinigt (Punktuation/Zahlen/Sonderzeichen entfernt). Das Resultat ist
+eine Liste mit den Sätzen als Elemente.
+
+2. Im zweiten Schritt wird die Häufigkeit der einzelnen Wörter ermittelt. Eine sogenannte "Drop-Probability" 
+hilft im  späteren Verlauf des Algorithmus seltene Wörter zu eliminieren. Zuvor wird jedoch über die
+einfache Häufigkeit ein weiterer Eliminierungprozess durchgeführt.
+
+3. Über eine Generator-Pipeline werden die Sätze geparsed. Dabei gibt der Parameter skip_window die 
+"Fensterbreite" des Targetwortes an und generiert die jeweiligen Tupel (Targetwort, Kontextwort). 
+Nun kommt die Drop-Probability zum Einsatz. Dieser
+Wert entscheidet darüber, ob das betrachtende Kontextwort bleibt oder nicht. Über die
+Generatoren _lookup_label, _ngrammize, _hash_ngrams, erfolgen die Schritte der n-gram-Zerlegung und
+des n-gram-Hashings.
+
+4. Im letzten Teil des Preprocessings schreibt die Funktion write_batches_to_file()
+die generierten Trainingstupel-Batches in ein für Tensorflow bestimmten Format. Die
+Größe der Batches kann wiederum über den Parameter batches_size angegeben werden. 
 
 
 

@@ -1,15 +1,23 @@
-"""This module handles all the input-relatet tasks like loading, pre-processing and batching"""
+"""This module handles all the input-relatet tasks like loading, pre-processing
+and batching"""
+
 import os
+import re
 import zipfile
 import tarfile
-import collections
 import random
+import collections
+import multiprocessing as mp
 from tempfile import gettempdir
 
-import numpy as np
-from nltk import ngrams
-import tensorflow as tf
 import fnvhash
+import numpy as np
+import tensorflow as tf
+from nltk import ngrams
+from nltk.tokenize import sent_tokenize, word_tokenize
+
+# function names will be put there to show the progress of the preprocessing
+QUEUE = mp.Manager().Queue()
 
 
 def check_valid_path(file_path):
@@ -108,6 +116,17 @@ def hash_string_list(strings, buckets, offset=0):
     return [(fnvhash.fnv1a_64(x.encode('UTF-8')) % (buckets))+offset for x in strings]
 
 
+def inform_progressbar(func):
+    """Decorator used to put the function names into the QUEUE for showing the
+    progress in the progressbar
+    :param func: The function which should be decorated."""
+    def wrapper_function(*args, **kwargs):
+        func(*args, **kwargs)
+        QUEUE.put(func.__name__)
+    return wrapper_function
+
+
+@inform_progressbar
 def write_batches_to_file(batchgenerator, filename):
     """ Writes the batches obtained from batchgenerator to a file.
 
@@ -132,7 +151,7 @@ def write_batches_to_file(batchgenerator, filename):
     writer.close()
 
 
-class InputProcessor():
+class InputProcessor:
     """Handles the creation of training-examble-batches from the raw training-text"""
 
     def __init__(self, settings):
@@ -147,15 +166,22 @@ class InputProcessor():
         self.wordcount = None
         self.dict = None
         self.drop_p_word = None
+        self.sentences = []
 
-    def preprocess(self, threshold=1e-3):
-        """ Do the needed proprocessing of the dataset. Count word frequencies, create a mapping word->int"""
-        self.wordcount = collections.Counter(self._words_in_file())
+    def preprocess(self):
+        """
+        Do the needed proprocessing of the dataset. Count word frequencies,
+        create a mapping word->int
+        """
+        # TODO: Process a folder files which where separated by user
+        self._process_text()
+        self.wordcount = collections.Counter(self._words_in_sentence())
 
         # number of all words in the corpus
         total_sum = sum(self.wordcount.values())
         # drop probability for a word in the corpus
-        self.drop_p_word = {word: 1 - np.sqrt(threshold/(self.wordcount[word] / total_sum))
+        self.drop_p_word = {word: 1-np.sqrt(self.settings.rejection_threshold /
+                            (self.wordcount[word] / total_sum))
                             for word in self.wordcount}
         idx = 0
         self.dict = {}
@@ -167,13 +193,62 @@ class InputProcessor():
             self.dict[word] = idx
             idx += 1
 
-    def _words_in_file(self):
-        """Returns a generator over all words in the file"""
+    @inform_progressbar
+    def _process_text(self):
+        """
+        First check if the corpus should be processed with multiple cores. If
+        the corpus is large enough than cut the corpus into pieces and use
+        multiprocessing to process the pieces simultaneously. It could cut some
+        words into meaningless chunks but if the corpus is large enough than
+        this little  changes should not have a big impact on the word vectors.
+        """
+
         with open(self.settings.corpus_path) as f:
-            for line in f:
-                words = line.split()
-                for word in words:
-                    yield word
+            corpus = f.read()
+            if os.path.getsize(self.settings.corpus_path) / (1024 * 1024) < 100:
+                self.sentences = self._find_and_clean_sentences(corpus)
+            else:
+                size_per_cpu = len(corpus) // mp.cpu_count()
+                pool = mp.Pool(processes=mp.cpu_count() - 2)
+                corpus_chunks = []
+
+                for i in range(0, mp.cpu_count()):
+                    corpus_chunks.append(
+                        corpus[i * size_per_cpu:(i + 1) * size_per_cpu])
+                result = pool.map(self._find_and_clean_sentences, corpus_chunks)
+
+                for sentence_bundle in result:
+                    for sentence in sentence_bundle:
+                        self.sentences.append(sentence)
+
+    def _find_and_clean_sentences(self, corpus):
+        """
+        Uses NLTK to parse the corpus and find the sentences.
+        :param str corpus: The corpus where the sentences should be found.
+        :return: A list with sentences.
+        """
+        sentence_tokens = sent_tokenize(corpus, language='german')
+        for j, sentence in enumerate(sentence_tokens):
+            clean_sentence = ""
+            for word in word_tokenize(sentence):
+                clean_word = "".join(letter for letter in word
+                                     if letter.isalpha())
+                if not clean_word.isspace():
+                    clean_sentence = " ".join(filter(None, [clean_sentence,
+                                                            clean_word]))
+
+            clean_sentence = re.sub("\s+", " ", clean_sentence)
+            sentence_tokens[j] = clean_sentence.lower()
+        return sentence_tokens
+
+    def _words_in_sentence(self):
+        """
+        Returns a generator over all words in the sentence written lowercase and
+        removes punctuation.
+        """
+        for sentence in self.sentences:
+            for word in sentence.split(" "):
+                yield word
 
     def _subsample(self, gen):
         """This generators checks if the target word or context word
@@ -188,30 +263,30 @@ class InputProcessor():
             else:
                 yield (target_word, context_word)
 
+
     def string_samples(self):
         """ Returns a generator for samples (targetword->contextword)
-
         :returns: A generator yielding 2-tuple consisting of a target-word and a context word.
         """
         # possible positions of context-words relative to a target word
         contextoffsets = [
             x for x in range(-self.settings.skip_window, self.settings.skip_window+1) if x != 0]
-        with open(self.settings.corpus_path) as f:
-            for line in f:
-                idx = 0
-                words = line.split()
-                for word in words:
-                    # choose a random context word. Take special care to stay in the bounds of the list
-                    contextoffset = random.choice(contextoffsets)
-                    contextindex = idx+contextoffset
+        #with open(self.settings.corpus_path) as f:
+        for words in self.sentences:
+            words = words.split()
+            idx = 0
+            for word in words:
+                # choose a random context word. Take special care to stay in the bounds of the list
+                contextoffset = random.choice(contextoffsets)
+                contextindex = idx+contextoffset
                     # if selected index-offset reaches outside of the list, try the other direction
-                    if idx+contextoffset < 0 or idx+contextoffset >= len(words):
-                        contextoffset = contextoffset*-1
+                if idx+contextoffset < 0 or idx+contextoffset >= len(words):
+                    contextoffset = contextoffset*-1
                         # above fails if the current line is to short. Stay inside the bounds at all cost!
-                        contextindex = min(
-                            len(words)-1, max(0, idx+contextoffset))
-                    yield (word, words[contextindex])
-                    idx += 1
+                    contextindex = min(
+                        len(words)-1, max(0, idx+contextoffset))
+                yield (word, words[contextindex])
+                idx += 1
 
     def _lookup_label(self, gen):
         """ Maps the second words in the input-tuple to numbers.

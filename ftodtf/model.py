@@ -160,6 +160,15 @@ class Model():
         """
         return self._saver.save(session, file)
 
+    def restore(self, session, file):
+        """Restore the session which was saved in the previous runs.
+
+        :param session: The old session which should be overwritten
+        :type session tf.Session
+        :param str file: The path to the saved sessions
+        """
+        self._saver.restore(session, file)
+
     def init(self):
         """ Initialize variables and the input iterator.
 

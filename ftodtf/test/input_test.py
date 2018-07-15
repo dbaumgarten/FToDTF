@@ -8,9 +8,9 @@ from ftodtf.settings import FasttextSettings
 import fnvhash
 
 
-TESTFILECONTENT = """dies ist eine test datei
-der text hier ist testtext
-bla bla bla
+TESTFILECONTENT = """dies ist eine test datei.
+der text hier ist testtext.
+bla bla bla.
 """
 
 TESTFILENAME = join(gettempdir(), "ftodtftestfile")
@@ -30,7 +30,6 @@ def setup_module():
 def teardown_module():
     os.remove(TESTFILENAME)
 
-
 def test_generate_ngram_per_word():
     word = "diesisteintest"
     wanted = ["*di", "die", "ies", "esi", "sis", "ist", "ste", "tei",
@@ -39,17 +38,6 @@ def test_generate_ngram_per_word():
     assert len(ngrams) == len(wanted)
     for i, _ in enumerate(wanted):
         assert ngrams[i] == wanted[i]
-
-
-def test_words_in_file():
-    ipp = inp.InputProcessor(SETTINGS)
-    expected = TESTFILECONTENT.replace("\n", " ").split()
-    actual = ipp._words_in_file()
-    i = 0
-    for w in actual:
-        assert w == expected[i]
-        i += 1
-    assert i == len(expected)
 
 
 def test_preprocess():
@@ -79,6 +67,7 @@ def test_string_samples():
 
 def test_string_samples2():
     ipp = inp.InputProcessor(SETTINGS)
+    ipp.preprocess()
     samples = list(ipp.string_samples())
     assert len(samples) == 13
 
