@@ -44,7 +44,7 @@ eine Liste mit den Sätzen als Elemente.
 hilft im  späteren Verlauf des Algorithmus seltene Wörter zu eliminieren. Zuvor wird jedoch über die
 einfache Häufigkeit ein weiterer Eliminierungprozess durchgeführt.
 
-3. Über eine Generator-Pipeline werden die Sätze geparsed. Dabei gibt der Parameter skip_window die 
+3. Über eine Generator-Pipeline werden die Sätze geparsd. Dabei gibt der Parameter skip_window die 
 "Fensterbreite" des Targetwortes an und generiert die jeweiligen Tupel (Targetwort, Kontextwort). 
 Nun kommt die Drop-Probability zum Einsatz. Dieser
 Wert entscheidet darüber, ob das betrachtende Kontextwort bleibt oder nicht. Über die
@@ -52,7 +52,7 @@ Generatoren _lookup_label, _ngrammize, _hash_ngrams, erfolgen die Schritte der n
 des n-gram-Hashings.
 
 4. Im letzten Teil des Preprocessings schreibt die Funktion write_batches_to_file()
-die generierten Trainingstupel-Batches in ein für Tensorflow bestimmten Format. Die
+die generierten Trainingstupel-Batches in ein für Tensorflow bestimmtes Format. Die
 Größe der Batches kann wiederum über den Parameter batches_size angegeben werden. 
 
 
