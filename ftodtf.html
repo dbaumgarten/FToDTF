@@ -38,7 +38,8 @@
 </div>
 <div class="section" id="module-ftodtf.cli">
 <span id="ftodtf-cli-module"></span><h2>ftodtf.cli module<a class="headerlink" href="#module-ftodtf.cli" title="Permalink to this headline">¶</a></h2>
-<p>This module handles parsing of cli-flags and then calls the needed function from the library</p>
+<p>This module handles parsing of cli-flags and then calls the needed function
+from the library</p>
 <dl class="function">
 <dt id="ftodtf.cli.add_arguments_to_parser">
 <code class="descclassname">ftodtf.cli.</code><code class="descname">add_arguments_to_parser</code><span class="sig-paren">(</span><em>arglist</em>, <em>parser</em>, <em>required</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.cli.add_arguments_to_parser" title="Permalink to this definition">¶</a></dt>
@@ -64,10 +65,40 @@
 <dd><p>Program entry point.</p>
 </dd></dl>
 
+<dl class="function">
+<dt id="ftodtf.cli.show_prog">
+<code class="descclassname">ftodtf.cli.</code><code class="descname">show_prog</code><span class="sig-paren">(</span><em>q</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.cli.show_prog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Show progressbar, converges against the next max progress_bar.n and
+finishes only when the function “write_batches_to_file” ends.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>q</strong> – Process which handles the progressbar.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="ftodtf.cli.spawn_progress_bar">
+<code class="descclassname">ftodtf.cli.</code><code class="descname">spawn_progress_bar</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.cli.spawn_progress_bar" title="Permalink to this definition">¶</a></dt>
+<dd><p>This function will spawn a new process using multiprocessing module.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A child process.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
 </div>
 <div class="section" id="module-ftodtf.input">
 <span id="ftodtf-input-module"></span><h2>ftodtf.input module<a class="headerlink" href="#module-ftodtf.input" title="Permalink to this headline">¶</a></h2>
-<p>This module handles all the input-relatet tasks like loading, pre-processing and batching</p>
+<p>This module handles all the input-relatet tasks like loading, pre-processing
+and batching</p>
 <dl class="class">
 <dt id="ftodtf.input.InputProcessor">
 <em class="property">class </em><code class="descclassname">ftodtf.input.</code><code class="descname">InputProcessor</code><span class="sig-paren">(</span><em>settings</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.input.InputProcessor" title="Permalink to this definition">¶</a></dt>
@@ -98,22 +129,16 @@
 
 <dl class="method">
 <dt id="ftodtf.input.InputProcessor.preprocess">
-<code class="descname">preprocess</code><span class="sig-paren">(</span><em>threshold=0.001</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.input.InputProcessor.preprocess" title="Permalink to this definition">¶</a></dt>
-<dd><p>Do the needed proprocessing of the dataset. Count word frequencies, create a mapping word-&gt;int</p>
+<code class="descname">preprocess</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.input.InputProcessor.preprocess" title="Permalink to this definition">¶</a></dt>
+<dd><p>Do the needed proprocessing of the dataset. Count word frequencies,
+create a mapping word-&gt;int</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="ftodtf.input.InputProcessor.string_samples">
 <code class="descname">string_samples</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.input.InputProcessor.string_samples" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns a generator for samples (targetword-&gt;contextword)</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A generator yielding 2-tuple consisting of a target-word and a context word.</td>
-</tr>
-</tbody>
-</table>
+<dd><p>Returns a generator for samples (targetword-&gt;contextword)
+:returns: A generator yielding 2-tuple consisting of a target-word and a context word.</p>
 </dd></dl>
 
 </dd></dl>
@@ -175,6 +200,14 @@ This is the same process as described in the fasttext paper.</p>
 </tr>
 </tbody>
 </table>
+</dd></dl>
+
+<dl class="function">
+<dt id="ftodtf.input.inform_progressbar">
+<code class="descclassname">ftodtf.input.</code><code class="descname">inform_progressbar</code><span class="sig-paren">(</span><em>func</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.input.inform_progressbar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorator used to put the function names into the QUEUE for showing the
+progress in the progressbar
+:param func: The function which should be decorated.</p>
 </dd></dl>
 
 <dl class="function">
@@ -247,21 +280,8 @@ unarchive functions.</p>
 
 <dl class="function">
 <dt id="ftodtf.input.write_batches_to_file">
-<code class="descclassname">ftodtf.input.</code><code class="descname">write_batches_to_file</code><span class="sig-paren">(</span><em>batchgenerator</em>, <em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.input.write_batches_to_file" title="Permalink to this definition">¶</a></dt>
-<dd><p>Writes the batches obtained from batchgenerator to a file.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>batchgenerator</strong> – A generator yielding training-batches</li>
-<li><strong>filename</strong> (<em>str</em>) – The full path of the file into which the batches should be written</li>
-</ul>
-</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
+<code class="descclassname">ftodtf.input.</code><code class="descname">write_batches_to_file</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.input.write_batches_to_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </div>
 <div class="section" id="module-ftodtf.model">
@@ -287,6 +307,22 @@ unarchive functions.</p>
 <dd><p>Initialize variables and the input iterator.</p>
 <p>Must be called before everything else.
 Must be called inside a tf.Session</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ftodtf.model.Model.restore">
+<code class="descname">restore</code><span class="sig-paren">(</span><em>session</em>, <em>file</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.model.Model.restore" title="Permalink to this definition">¶</a></dt>
+<dd><p>Restore the session which was saved in the previous runs.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>session</strong> – The old session which should be overwritten</td>
+</tr>
+</tbody>
+</table>
+<p>:type session tf.Session
+:param str file: The path to the saved sessions</p>
 </dd></dl>
 
 <dl class="method">
@@ -353,7 +389,9 @@ Must be called inside a tf.Session</p>
 <li><strong>num_buckets</strong> (<em>int</em>) – How many hash-buckets to use when hashing the ngrams to numbers.</li>
 <li><strong>validation_words</strong> (<em>str</em>) – A string of comma-seperated words. The similarity of these words to each other will be regularily computed and printed to indicade the progress of the training.</li>
 <li><strong>profile</strong> (<em>boolean</em>) – If set to True tensorflow will profile the graph-execution and writer results to ./profile.json.</li>
-<li><strong>learnrate</strong> (<em>float</em>) – The starting learnrate for the training. The actual learnrate will lineraily decrease to be 0 when the specified amount of training-steps is reached.</li>
+<li><strong>learnrate</strong> (<em>float</em>) – The starting learnrate for the training. The actual learnrate will lineraily decrease to beyth 0 when the specified amount of training-steps is reached.</li>
+<li><strong>rejection_threshold</strong> (<em>float</em>) – In order to subsample the most frequent words.</li>
+<li><strong>save_mode</strong> (<em>boolean</em>) – If the saved tf.Session objects should be used.</li>
 </ul>
 </td>
 </tr>
@@ -378,44 +416,105 @@ Must be called inside a tf.Session</p>
 <dl class="staticmethod">
 <dt id="ftodtf.settings.FasttextSettings.preprocessing_settings">
 <em class="property">static </em><code class="descname">preprocessing_settings</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.settings.FasttextSettings.preprocessing_settings" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the names of the settings that are used for the preprocessing command</p>
+<dd><p>Returns the names of the settings that are used for the preprocessing
+command</p>
 </dd></dl>
 
 <dl class="staticmethod">
 <dt id="ftodtf.settings.FasttextSettings.training_settings">
 <em class="property">static </em><code class="descname">training_settings</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.settings.FasttextSettings.training_settings" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the names of the settings that are used for the training command</p>
+<dd><p>Returns the names of the settings that are used for the training
+command</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="ftodtf.settings.FasttextSettings.validate">
-<code class="descname">validate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.settings.FasttextSettings.validate" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check if the current settings are valid</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body">ArgumentError of the validation fails</td>
-</tr>
-</tbody>
-</table>
+<dt id="ftodtf.settings.FasttextSettings.validate_preprocess">
+<code class="descname">validate_preprocess</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.settings.FasttextSettings.validate_preprocess" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the current settings are valid for pre processing.
+:raises: ValueError if the validation fails</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="ftodtf.settings.FasttextSettings.validate_train">
+<code class="descname">validate_train</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.settings.FasttextSettings.validate_train" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the current settings are valid for training.
+:raises: ValueError if the validation fails</p>
 </dd></dl>
 
 <dl class="attribute">
 <dt id="ftodtf.settings.FasttextSettings.validation_words_list">
 <code class="descname">validation_words_list</code><a class="headerlink" href="#ftodtf.settings.FasttextSettings.validation_words_list" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the validation_words as list of strings instead of a comma seperate string like the attribute would do</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">A list of strings if validation_words is set and else None</td>
-</tr>
-</tbody>
-</table>
+<dd><p>Returns the validation_words as list of strings instead of a comma
+seperate string like the attribute would do
+:returns: A list of strings if validation_words is set and else None</p>
 </dd></dl>
 
 </dd></dl>
+
+<dl class="function">
+<dt id="ftodtf.settings.check_batch_size">
+<code class="descclassname">ftodtf.settings.</code><code class="descname">check_batch_size</code><span class="sig-paren">(</span><em>batch_size</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.settings.check_batch_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ftodtf.settings.check_batches_file">
+<code class="descclassname">ftodtf.settings.</code><code class="descname">check_batches_file</code><span class="sig-paren">(</span><em>batches_file</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.settings.check_batches_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ftodtf.settings.check_corpus_path">
+<code class="descclassname">ftodtf.settings.</code><code class="descname">check_corpus_path</code><span class="sig-paren">(</span><em>corpus_path</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.settings.check_corpus_path" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ftodtf.settings.check_embedding_size">
+<code class="descclassname">ftodtf.settings.</code><code class="descname">check_embedding_size</code><span class="sig-paren">(</span><em>embedding_size</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.settings.check_embedding_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ftodtf.settings.check_learn_rate">
+<code class="descclassname">ftodtf.settings.</code><code class="descname">check_learn_rate</code><span class="sig-paren">(</span><em>learnrate</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.settings.check_learn_rate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ftodtf.settings.check_log_dir">
+<code class="descclassname">ftodtf.settings.</code><code class="descname">check_log_dir</code><span class="sig-paren">(</span><em>log_dir</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.settings.check_log_dir" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ftodtf.settings.check_ngram_size">
+<code class="descclassname">ftodtf.settings.</code><code class="descname">check_ngram_size</code><span class="sig-paren">(</span><em>ngram_size</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.settings.check_ngram_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ftodtf.settings.check_num_buckets">
+<code class="descclassname">ftodtf.settings.</code><code class="descname">check_num_buckets</code><span class="sig-paren">(</span><em>number_buckets</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.settings.check_num_buckets" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ftodtf.settings.check_num_sampled">
+<code class="descclassname">ftodtf.settings.</code><code class="descname">check_num_sampled</code><span class="sig-paren">(</span><em>num_sampled</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.settings.check_num_sampled" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ftodtf.settings.check_rejection_threshold">
+<code class="descclassname">ftodtf.settings.</code><code class="descname">check_rejection_threshold</code><span class="sig-paren">(</span><em>rejection_threshold</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.settings.check_rejection_threshold" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ftodtf.settings.check_skip_window">
+<code class="descclassname">ftodtf.settings.</code><code class="descname">check_skip_window</code><span class="sig-paren">(</span><em>skip_window</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.settings.check_skip_window" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ftodtf.settings.check_steps">
+<code class="descclassname">ftodtf.settings.</code><code class="descname">check_steps</code><span class="sig-paren">(</span><em>steps</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.settings.check_steps" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ftodtf.settings.check_vocabulary_size">
+<code class="descclassname">ftodtf.settings.</code><code class="descname">check_vocabulary_size</code><span class="sig-paren">(</span><em>vocabulary_size</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.settings.check_vocabulary_size" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
 
 </div>
 <div class="section" id="module-ftodtf.training">
