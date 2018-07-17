@@ -42,7 +42,7 @@
 from the library</p>
 <dl class="function">
 <dt id="ftodtf.cli.add_arguments_to_parser">
-<code class="descclassname">ftodtf.cli.</code><code class="descname">add_arguments_to_parser</code><span class="sig-paren">(</span><em>arglist</em>, <em>parser</em>, <em>required</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.cli.add_arguments_to_parser" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">ftodtf.cli.</code><code class="descname">add_arguments_to_parser</code><span class="sig-paren">(</span><em>arglist</em>, <em>parser</em>, <em>required</em>, <em>group=None</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.cli.add_arguments_to_parser" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adds arguments (obtained from the settings-class) to an agrparse-parser</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -52,6 +52,7 @@ from the library</p>
 <li><strong>arglist</strong> (<em>list</em><em>(</em><em>str</em><em>)</em>) – A list of strings representing the names of the flags to add</li>
 <li><strong>parser</strong> (<em>argparse.ArgumentParser</em>) – The parser to add the arguments to</li>
 <li><strong>required</strong> (<em>list</em><em>(</em><em>str</em><em>)</em>) – A list of argument-names that are required for the command</li>
+<li><strong>group</strong> (<em>str</em>) – If set place the arguments in an argument-group of the specified name</li>
 </ul>
 </td>
 </tr>
@@ -392,6 +393,10 @@ Must be called inside a tf.Session</p>
 <li><strong>learnrate</strong> (<em>float</em>) – The starting learnrate for the training. The actual learnrate will lineraily decrease to beyth 0 when the specified amount of training-steps is reached.</li>
 <li><strong>rejection_threshold</strong> (<em>float</em>) – In order to subsample the most frequent words.</li>
 <li><strong>save_mode</strong> (<em>boolean</em>) – If the saved tf.Session objects should be used.</li>
+<li><strong>job</strong> (<em>string</em>) – The role of this node in a distributed setup. Can be ‘worker’ or ‘ps’.</li>
+<li><strong>workers</strong> (<em>str</em>) – A comma seperated list of host:port combinations representing the workers in the distributed setup.</li>
+<li><strong>ps</strong> (<em>str</em>) – A comma seperated list of host:port combinations representing the parameter servers in the distributed setup.</li>
+<li><strong>index</strong> (<em>int</em>) – The of the node itself in the list of –workers (or –ps, depending on –job).</li>
 </ul>
 </td>
 </tr>
@@ -414,10 +419,24 @@ Must be called inside a tf.Session</p>
 </dd></dl>
 
 <dl class="staticmethod">
+<dt id="ftodtf.settings.FasttextSettings.distribution_settings">
+<em class="property">static </em><code class="descname">distribution_settings</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.settings.FasttextSettings.distribution_settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the names of the settings that are used for configuren the tensoflow-cluster</p>
+</dd></dl>
+
+<dl class="staticmethod">
 <dt id="ftodtf.settings.FasttextSettings.preprocessing_settings">
 <em class="property">static </em><code class="descname">preprocessing_settings</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.settings.FasttextSettings.preprocessing_settings" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the names of the settings that are used for the preprocessing
 command</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="ftodtf.settings.FasttextSettings.ps_list">
+<code class="descname">ps_list</code><a class="headerlink" href="#ftodtf.settings.FasttextSettings.ps_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns ps as list of strings instead of a comma
+seperate string like the attribute would do
+:returns: A list of strings if ps is set and else None</p>
 </dd></dl>
 
 <dl class="staticmethod">
@@ -449,6 +468,14 @@ seperate string like the attribute would do
 :returns: A list of strings if validation_words is set and else None</p>
 </dd></dl>
 
+<dl class="attribute">
+<dt id="ftodtf.settings.FasttextSettings.workers_list">
+<code class="descname">workers_list</code><a class="headerlink" href="#ftodtf.settings.FasttextSettings.workers_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns workers as list of strings instead of a comma
+seperate string like the attribute would do
+:returns: A list of strings if workers is set and else None</p>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="function">
@@ -472,6 +499,16 @@ seperate string like the attribute would do
 <dd></dd></dl>
 
 <dl class="function">
+<dt id="ftodtf.settings.check_index">
+<code class="descclassname">ftodtf.settings.</code><code class="descname">check_index</code><span class="sig-paren">(</span><em>job</em>, <em>workers</em>, <em>ps</em>, <em>index</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.settings.check_index" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="ftodtf.settings.check_job">
+<code class="descclassname">ftodtf.settings.</code><code class="descname">check_job</code><span class="sig-paren">(</span><em>job</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.settings.check_job" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
 <dt id="ftodtf.settings.check_learn_rate">
 <code class="descclassname">ftodtf.settings.</code><code class="descname">check_learn_rate</code><span class="sig-paren">(</span><em>learnrate</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.settings.check_learn_rate" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -485,6 +522,20 @@ seperate string like the attribute would do
 <dt id="ftodtf.settings.check_ngram_size">
 <code class="descclassname">ftodtf.settings.</code><code class="descname">check_ngram_size</code><span class="sig-paren">(</span><em>ngram_size</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.settings.check_ngram_size" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="function">
+<dt id="ftodtf.settings.check_nodelist">
+<code class="descclassname">ftodtf.settings.</code><code class="descname">check_nodelist</code><span class="sig-paren">(</span><em>noli</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.settings.check_nodelist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks if the given argument is a comma seperated list of host:port strings.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body">ValueError if it is not</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="function">
 <dt id="ftodtf.settings.check_num_buckets">
@@ -560,20 +611,17 @@ seperate string like the attribute would do
       </div>
       <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
-  <h3><a href="index.html">Table Of Contents</a></h3>
-  <ul>
-<li><a class="reference internal" href="#">ftodtf package</a><ul>
-<li><a class="reference internal" href="#submodules">Submodules</a></li>
-<li><a class="reference internal" href="#module-ftodtf.cli">ftodtf.cli module</a></li>
-<li><a class="reference internal" href="#module-ftodtf.input">ftodtf.input module</a></li>
-<li><a class="reference internal" href="#module-ftodtf.model">ftodtf.model module</a></li>
-<li><a class="reference internal" href="#module-ftodtf.settings">ftodtf.settings module</a></li>
-<li><a class="reference internal" href="#module-ftodtf.training">ftodtf.training module</a></li>
-<li><a class="reference internal" href="#module-ftodtf.validation">ftodtf.validation module</a></li>
-<li><a class="reference internal" href="#module-ftodtf">Module contents</a></li>
-</ul>
-</li>
-</ul>
+<h1 class="logo"><a href="index.html">FToDTF</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+
 <div class="relations">
 <h3>Related Topics</h3>
 <ul>
@@ -581,13 +629,6 @@ seperate string like the attribute would do
   </ul></li>
 </ul>
 </div>
-  <div role="note" aria-label="source link">
-    <h3>This Page</h3>
-    <ul class="this-page-menu">
-      <li><a href="_sources/ftodtf.rst.txt"
-            rel="nofollow">Show Source</a></li>
-    </ul>
-   </div>
 <div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <div class="searchformwrapper">
@@ -608,7 +649,7 @@ seperate string like the attribute would do
       &copy;2018, Daniel Baumgarten, Dimitri Denisenko.
       
       |
-      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.5</a>
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.6</a>
       &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.11</a>
       
       |
