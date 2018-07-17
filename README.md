@@ -20,8 +20,14 @@ fasttext train
 ```  
 in your console
 
-## Testdata
-If you need some text to try this programm out, try: http://mattmahoney.net/dc/text8.zip
+## Docker
+This application is also available as pre-built docker-image (https://hub.docker.com/r/dbaumgarten/ftodtf/)
+```
+sudo docker run --rm -it -v `pwd`:/data dbaumgarten/ftodtf train
+```
+
+## Known Bugs and Limitations
+- When supplying input-text that does not contain sentences (but instead just a bunch of words without punctuation) ```fasttext preprocess``` will hang indefinetly.
 
 ## Documentation
 You can find the auto-genrated documentation for the code here: https://dbaumgarten.github.io/FToDTF/  
