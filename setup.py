@@ -9,7 +9,7 @@ def find_dependencies():
     """ Dynamically computes the needed dependencies.
         This way we can list tensorflow as dependencie, but allow the user to keep an existing tensorflow-gpu installation
     """
-    deps = ["numpy", "nltk", "fnvhash", "tqdm"]
+    deps = ["numpy", "nltk", "fnvhash", "tqdm", "psutil"]
     try:
         # pylint: disable=unused-variable
         import tensorflow
