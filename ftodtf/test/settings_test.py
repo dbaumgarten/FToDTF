@@ -10,20 +10,23 @@ def test_class_FasttextSettings():
 
 def test_preprocessing_settings():
     pre_seti = {"corpus_path", "batches_file", "vocabulary_size", "batch_size",
-            "skip_window", "ngram_size", "num_buckets", "rejection_threshold",
-            "profile"}
+                "skip_window", "ngram_size", "num_buckets", "rejection_threshold",
+                "profile"}
 
-    assert len(pre_seti) == len(ftodtf.settings.FasttextSettings.preprocessing_settings())
-    assert pre_seti == set(ftodtf.settings.FasttextSettings.preprocessing_settings())
+    assert len(pre_seti) == len(
+        ftodtf.settings.FasttextSettings.preprocessing_settings())
+    assert pre_seti == set(
+        ftodtf.settings.FasttextSettings.preprocessing_settings())
 
 
 def test_training_settings():
     train_seti = {"batches_file", "log_dir", "steps", "vocabulary_size",
-            "batch_size", "embedding_size", "num_sampled", "num_buckets",
-            "validation_words", "profile", "learnrate", "save_mode"}
-    assert len(train_seti) == len(ftodtf.settings.FasttextSettings.training_settings())
-    assert train_seti == set(ftodtf.settings.FasttextSettings.training_settings())
-
+                  "batch_size", "embedding_size", "num_sampled", "num_buckets",
+                  "validation_words", "profile", "learnrate", "save_mode"}
+    assert len(train_seti) == len(
+        ftodtf.settings.FasttextSettings.training_settings())
+    assert train_seti == set(
+        ftodtf.settings.FasttextSettings.training_settings())
 
 
 def test_validation_word_list():
@@ -43,6 +46,39 @@ def test_attribute_docstring():
         "num_sampled", True) == "Number of negative examples to sample when computing the nce_loss. Default: 5"
 
 
+def test_check_nodelist():
+    with pytest.raises(ValueError):
+        ftodtf.settings.check_nodelist("foo,bar")
+    with pytest.raises(ValueError):
+        ftodtf.settings.check_nodelist("foo:8080,bar")
+    with pytest.raises(ValueError):
+        ftodtf.settings.check_nodelist("foo")
+    ftodtf.settings.check_nodelist("foo:8080")
+    ftodtf.settings.check_nodelist("foo:8080,bar:9090")
+    ftodtf.settings.check_nodelist("foo:8080,127.0.2.1:8181")
+
+
+def test_check_job():
+    ftodtf.settings.check_job("worker")
+    ftodtf.settings.check_job("ps")
+    with pytest.raises(ValueError):
+        ftodtf.settings.check_job("foo")
+    with pytest.raises(ValueError):
+        ftodtf.settings.check_job("")
+
+
+def test_check_index():
+    ftodtf.settings.check_index("worker", "0", "", 0)
+    ftodtf.settings.check_index("worker", "0,0,0,0,0,0,0,0,0", "", 8)
+    ftodtf.settings.check_index("ps", "", "0", 0)
+    ftodtf.settings.check_index("ps", "", "0,0,0,0,0,0,0,0,0", 8)
+    with pytest.raises(ValueError):
+        ftodtf.settings.check_index(
+            "worker", "0", "0,0,0,0,0,0,0,0,0", 8)
+    with pytest.raises(ValueError):
+        ftodtf.settings.check_index("ps", "0,0,0,0,0,0,0,0,0", "", 8)
+
+
 def test_validate_preprocess():
     seti = ftodtf.settings.FasttextSettings()
     seti.batches_size = 10000
@@ -53,6 +89,7 @@ def test_validate_preprocess():
     with pytest.raises(Exception):
         seti.validate_train()
 
+
 def test_corpus_path():
     with pytest.raises(FileNotFoundError):
         ftodtf.settings.check_corpus_path("/fake/folder")
@@ -62,6 +99,7 @@ def test_corpus_path():
 def test_check_vocabulary_size(test_input):
     with pytest.raises(ValueError):
         ftodtf.settings.check_vocabulary_size(test_input)
+
 
 @pytest.mark.parametrize("test_input", [-1, 2])
 def test_check_rejection_threshold(test_input):
@@ -75,13 +113,13 @@ def test_check_batch_size(test_input):
         ftodtf.settings.check_batch_size(test_input)
 
 
-@pytest.mark.parametrize("test_input", [0,6])
+@pytest.mark.parametrize("test_input", [0, 6])
 def test_check_skip_window(test_input):
     with pytest.raises(ValueError):
         ftodtf.settings.check_skip_window(test_input)
 
 
-@pytest.mark.parametrize("test_input", [2,7])
+@pytest.mark.parametrize("test_input", [2, 7])
 def test_check_ngram_size(test_input):
     with pytest.raises(ValueError):
         ftodtf.settings.check_ngram_size(test_input)
@@ -106,6 +144,7 @@ def test_check_steps():
     with pytest.raises(ValueError):
         ftodtf.settings.check_steps(-1)
 
+
 @pytest.mark.parametrize("test_input", [49, 1001])
 def test_check_embedding_size(test_input):
     with pytest.raises(ValueError):
@@ -117,15 +156,8 @@ def test_check_num_sampled(test_input):
     with pytest.raises(ValueError):
         ftodtf.settings.check_num_sampled(test_input)
 
-@pytest.mark.parametrize("test_input", [-1,2])
+
+@pytest.mark.parametrize("test_input", [-1, 2])
 def test_check_learn_rate(test_input):
     with pytest.raises(ValueError):
         ftodtf.settings.check_learn_rate(test_input)
-
-
-
-
-
-
-
-

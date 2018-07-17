@@ -22,13 +22,16 @@ PREPROCESS_PARSER = SUBPARSER.add_parser("preprocess")
 TRAIN_PARSER = SUBPARSER.add_parser("train")
 
 
-def add_arguments_to_parser(arglist, parser, required):
+def add_arguments_to_parser(arglist, parser, required, group=None):
     """ Adds arguments (obtained from the settings-class) to an agrparse-parser
 
     :param list(str) arglist: A list of strings representing the names of the flags to add
     :param argparse.ArgumentParser parser: The parser to add the arguments to
     :param list(str) required: A list of argument-names that are required for the command
+    :param str group: If set place the arguments in an argument-group of the specified name
     """
+    if group:
+        parser = parser.add_argument_group(group)
     for parameter, default in filter(lambda x: x[0] in arglist, vars(SETTINGS).items()):
         parser.add_argument("--"+parameter, type=type(default),
                             help=SETTINGS.attribute_docstring(parameter),
@@ -42,6 +45,11 @@ add_arguments_to_parser(SETTINGS.preprocessing_settings(),
 add_arguments_to_parser(SETTINGS.training_settings(),
                         TRAIN_PARSER,
                         TRAIN_REQUIRED_PARAMETERS)
+
+add_arguments_to_parser(SETTINGS.distribution_settings(),
+                        TRAIN_PARSER,
+                        [],
+                        "Distribution settings")
 
 
 def spawn_progress_bar():
@@ -135,26 +143,3 @@ if __name__ == "__main__":
             child.kill()
 
         print("Program interrupted!")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

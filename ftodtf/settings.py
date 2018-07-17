@@ -28,6 +28,10 @@ class FasttextSettings:
     :ivar float learnrate: The starting learnrate for the training. The actual learnrate will lineraily decrease to beyth 0 when the specified amount of training-steps is reached.
     :ivar float rejection_threshold: In order to subsample the most frequent words.
     :ivar boolean save_mode: If the saved tf.Session objects should be used.
+    :ivar string job: The role of this node in a distributed setup. Can be 'worker' or 'ps'.
+    :ivar str workers: A comma seperated list of host:port combinations representing the workers in the distributed setup.
+    :ivar str ps: A comma seperated list of host:port combinations representing the parameter servers in the distributed setup.
+    :ivar int index: The of the node itself in the list of --workers (or --ps, depending on --job).
     """
 
     def __init__(self):
@@ -47,6 +51,10 @@ class FasttextSettings:
         self.learnrate = 0.1
         self.rejection_threshold = 0.0001
         self.save_mode = False
+        self.job = "worker"
+        self.index = 0
+        self.workers = "localhost:7777"
+        self.ps = "localhost:7777"
 
     @staticmethod
     def preprocessing_settings():
@@ -66,6 +74,11 @@ class FasttextSettings:
                 "batch_size", "embedding_size", "num_sampled", "num_buckets",
                 "validation_words", "profile", "learnrate", "save_mode"]
 
+    @staticmethod
+    def distribution_settings():
+        """ Returns the names of the settings that are used for configuren the tensoflow-cluster """
+        return ["job", "index", "workers", "ps"]
+
     @property
     def validation_words_list(self):
         """ Returns the validation_words as list of strings instead of a comma
@@ -74,6 +87,26 @@ class FasttextSettings:
         """
         if self.validation_words:
             return self.validation_words.split(",")
+        return None
+
+    @property
+    def workers_list(self):
+        """ Returns workers as list of strings instead of a comma
+        seperate string like the attribute would do
+        :returns: A list of strings if workers is set and else None
+        """
+        if self.workers:
+            return self.workers.split(",")
+        return None
+
+    @property
+    def ps_list(self):
+        """ Returns ps as list of strings instead of a comma
+        seperate string like the attribute would do
+        :returns: A list of strings if ps is set and else None
+        """
+        if self.ps:
+            return self.ps.split(",")
         return None
 
     def validate_preprocess(self):
@@ -103,6 +136,10 @@ class FasttextSettings:
             check_num_sampled(self.num_sampled)
             check_num_buckets(self.num_buckets)
             check_learn_rate(self.learnrate)
+            check_nodelist(self.workers)
+            check_nodelist(self.ps)
+            check_job(self.job)
+            check_index(self.job, self.workers, self.ps, self.index)
         except Exception as e:
             raise e
 
@@ -112,12 +149,43 @@ class FasttextSettings:
         :param str attribute: The name of the attribute
         :returns: The docstring for the attribute
         """
-        docstring = re.search("^.*:ivar \\w* "+attribute +
-                              ": (.*)$", self.__doc__, re.MULTILINE).group(1)
+        match = re.search("^.*:ivar \\w* "+attribute +
+                          ": (.*)$", self.__doc__, re.MULTILINE)
+        if not match:
+            raise RuntimeError("No docstring found for: "+attribute)
+        docstring = match.group(1)
         if include_defaults:
             docstring += " Default: "+str(vars(self)[attribute])
 
         return docstring
+
+
+def check_index(job, workers, ps, index):
+    if job == "worker":
+        li = workers
+    else:
+        li = ps
+    if index < 0 or index >= len(li.split(",")):
+        raise ValueError(
+            "--index must be between 0 and {}".format(len(li.split(","))))
+
+
+def check_job(job):
+    if job != "worker" and job != "ps":
+        raise ValueError("--job can only be 'worker' or 'ps'")
+
+
+def check_nodelist(noli):
+    """ Checks if the given argument is a comma seperated list of host:port strings.
+
+    :raises: ValueError if it is not
+    """
+    hostportregex = re.compile("^[0-9a-zA-Z.]+:[0-9]+$")
+    noli = noli.split(",")
+    for e in noli:
+        if not hostportregex.match(e):
+            raise ValueError(
+                "{} is not a valid host:port combination".format(e))
 
 
 def check_corpus_path(corpus_path):
@@ -128,7 +196,7 @@ def check_corpus_path(corpus_path):
 def check_vocabulary_size(vocabulary_size):
     if vocabulary_size <= 0:
         raise ValueError("Vocabulary size must be bigger than zero.")
-    elif vocabulary_size > 10251098:# Number of English words --> biggest vocab
+    elif vocabulary_size > 10251098:  # Number of English words --> biggest vocab
         raise ValueError("There exist no language with such a big vocabulary.")
 
 
@@ -164,7 +232,8 @@ def check_num_buckets(number_buckets):
 
 def check_batches_file(batches_file):
     if not os.path.isfile(batches_file):
-        raise FileNotFoundError("The exist no batch file for training.")
+        raise FileNotFoundError(
+            "The specified batches-file could not be found.")
 
 
 def check_log_dir(log_dir):
@@ -194,7 +263,3 @@ def check_learn_rate(learnrate):
         # https://fasttext.cc/docs/en/supervised-tutorial.html
         raise ValueError("The recommended learning rate should be between 0.01"
                          " and 1.0.")
-
-
-
-
