@@ -16,13 +16,17 @@ import tensorflow as tf
 import nltk
 from nltk import ngrams
 from nltk.tokenize import sent_tokenize, word_tokenize
-nltk.download('punkt')
+
+try:
+    nltk.data.find('tokenizers/punkt')
+except LookupError:
+    nltk.download('punkt')
 
 # function names will be put there to show the progress of the preprocessing
 QUEUE = mp.Manager().Queue()
 
 
-def check_valid_path(file_path):    
+def check_valid_path(file_path):
     """
     Checks if the given path exists.
 
