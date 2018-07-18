@@ -65,7 +65,8 @@ class Model():
                 nce_weights = tf.Variable(
                     tf.truncated_normal([settings.vocabulary_size, settings.embedding_size], stddev=1.0 / math.sqrt(settings.embedding_size)))
             with tf.name_scope('biases'):
-                nce_biases = tf.Variable(tf.zeros([settings.vocabulary_size]))
+                nce_biases = tf.Variable(
+                    tf.zeros([settings.vocabulary_size]))
 
             # Set the first enty in embeddings (belonging to the padding-ngram) to <0,0,...>
             self.mask_padding_zero_op = tf.scatter_update(
@@ -87,18 +88,18 @@ class Model():
             tf.summary.scalar('loss', self.loss)
 
             # Keep track of how many iterations we have already done
-            step_nr = tf.Variable(0, trainable=False, name='step_nr')
+            self.step_nr = tf.train.create_global_step(self.graph)
 
             # Learnrate starts at settings.learnrates and will reach ~0 when the training is finished.
             decaying_learn_rate = settings.learnrate * \
-                (1 - (step_nr/settings.steps))
+                (1 - (self.step_nr/settings.steps))
 
             # Add the learnrate to the summary
             tf.summary.scalar('learnrate', decaying_learn_rate)
 
             with tf.name_scope('optimizer'):
                 self.optimizer = tf.train.GradientDescentOptimizer(
-                    decaying_learn_rate).minimize(self.loss, global_step=step_nr)
+                    decaying_learn_rate).minimize(self.loss, global_step=self.step_nr)
 
             # Merge all summaries.
             self.merged = tf.summary.merge_all()
@@ -150,31 +151,15 @@ class Model():
 
         return tf.matmul(normalized_embeddings, normalized_embeddings, transpose_b=True)
 
-    def save(self, session, file):
-        """Save the current session (including variable values) to a file
+    def get_scaffold(self):
+        """ Returns a tf.train.Scaffold object describing this graph
 
-        :param session: The current session to save
-        :type session: tf.Session
-        :param str file: The path to save to
-        :returns: The result of saver.save()
+        :returns: tf.train.Scaffold
         """
-        return self._saver.save(session, file)
-
-    def restore(self, session, file):
-        """Restore the session which was saved in the previous runs.
-
-        :param session: The old session which should be overwritten
-        :type session tf.Session
-        :param str file: The path to the saved sessions
-        """
-        self._saver.restore(session, file)
-
-    def init(self):
-        """ Initialize variables and the input iterator.
-
-            Must be called before everything else.
-            Must be called inside a tf.Session
-        """
-        tf.global_variables_initializer().run()
-        self._dataset_init.run()
-        tf.tables_initializer().run()
+        return tf.train.Scaffold(
+            init_op=tf.global_variables_initializer(),
+            local_init_op=tf.group(tf.local_variables_initializer(
+            ), self._dataset_init, tf.tables_initializer()),
+            saver=self._saver,
+            summary_op=self.merged
+        )

@@ -36,7 +36,7 @@ def test_add_arguments_to_parser(parse, settings):
     args = set([arg for arg in vars(train_parser.parse_args([])).keys()])
     assert {"batches_file", "log_dir", "steps", "vocabulary_size", "batch_size",
             "embedding_size", "num_sampled", "num_buckets", "validation_words",
-            "profile", "learnrate", "save_mode"} == args
+            "profile", "learnrate"} == args
 
 
 def test_cli_main_unknown_argument():

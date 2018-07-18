@@ -27,10 +27,9 @@ class FasttextSettings:
     :ivar boolean profile: If set to True tensorflow will profile the graph-execution and writer results to ./profile.json.
     :ivar float learnrate: The starting learnrate for the training. The actual learnrate will lineraily decrease to beyth 0 when the specified amount of training-steps is reached.
     :ivar float rejection_threshold: In order to subsample the most frequent words.
-    :ivar boolean save_mode: If the saved tf.Session objects should be used.
-    :ivar string job: The role of this node in a distributed setup. Can be 'worker' or 'ps'.
+    :ivar string job: The role of this node in a distributed setup. Can be worker' or 'ps'.
     :ivar str workers: A comma seperated list of host:port combinations representing the workers in the distributed setup.
-    :ivar str ps: A comma seperated list of host:port combinations representing the parameter servers in the distributed setup.
+    :ivar str ps: A comma seperated list of host:port combinations representing the parameter servers in the distributed setup. If empty a non-distributed setup is assumed.
     :ivar int index: The of the node itself in the list of --workers (or --ps, depending on --job).
     """
 
@@ -50,11 +49,10 @@ class FasttextSettings:
         self.profile = False
         self.learnrate = 0.1
         self.rejection_threshold = 0.0001
-        self.save_mode = False
         self.job = "worker"
         self.index = 0
         self.workers = "localhost:7777"
-        self.ps = "localhost:7777"
+        self.ps = ""
 
     @staticmethod
     def preprocessing_settings():
@@ -97,7 +95,7 @@ class FasttextSettings:
         """
         if self.workers:
             return self.workers.split(",")
-        return None
+        return []
 
     @property
     def ps_list(self):
@@ -107,7 +105,7 @@ class FasttextSettings:
         """
         if self.ps:
             return self.ps.split(",")
-        return None
+        return []
 
     def validate_preprocess(self):
         """ Check if the current settings are valid for pre processing.
@@ -137,7 +135,7 @@ class FasttextSettings:
             check_num_buckets(self.num_buckets)
             check_learn_rate(self.learnrate)
             check_nodelist(self.workers)
-            check_nodelist(self.ps)
+            check_nodelist(self.ps, allow_empty=True)
             check_job(self.job)
             check_index(self.job, self.workers, self.ps, self.index)
         except Exception as e:
@@ -175,11 +173,13 @@ def check_job(job):
         raise ValueError("--job can only be 'worker' or 'ps'")
 
 
-def check_nodelist(noli):
+def check_nodelist(noli, allow_empty=False):
     """ Checks if the given argument is a comma seperated list of host:port strings.
 
     :raises: ValueError if it is not
     """
+    if allow_empty and noli == "":
+        return
     hostportregex = re.compile("^[0-9a-zA-Z.]+:[0-9]+$")
     noli = noli.split(",")
     for e in noli:
@@ -237,7 +237,7 @@ def check_batches_file(batches_file):
 
 
 def check_log_dir(log_dir):
-    if not os.listdir(log_dir):
+    if not os.path.exists(log_dir):
         raise FileNotFoundError("Cannot find the log folder!")
 
 

@@ -56,6 +56,7 @@ def test_check_nodelist():
     ftodtf.settings.check_nodelist("foo:8080")
     ftodtf.settings.check_nodelist("foo:8080,bar:9090")
     ftodtf.settings.check_nodelist("foo:8080,127.0.2.1:8181")
+    ftodtf.settings.check_nodelist("", True)
 
 
 def test_check_job():

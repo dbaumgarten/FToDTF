@@ -6,6 +6,7 @@ import pytest
 import ftodtf.training as ft
 from ftodtf.settings import FasttextSettings
 import ftodtf.input as inp
+import shutil
 
 
 TESTDATA = """anarchism originated as a term of abuse first used against early
@@ -24,8 +25,13 @@ def setup_module():
 
 
 def teardown_module():
-    os.remove(join(tempdir, "TESTDATAfile"))
-    os.remove(join(tempdir, "TESTBATCHfile"))
+    try:
+        os.remove(join(tempdir, "TESTDATAfile"))
+        os.remove(join(tempdir, "TESTBATCHfile"))
+        os.remove(join(tempdir, "ftodtftestbatchfile"))
+        shutil.rmtree(join(tempdir, "ftodtflogs"))
+    except FileNotFoundError:
+        pass
 
 
 @pytest.mark.full
@@ -35,11 +41,12 @@ def test_fasttext():
 
     seti = FasttextSettings()
     seti.corpus_path = join(tempdir, "TESTDATAfile")
-    seti.steps = 1
+    seti.steps = 10
     seti.vocabulary_size = 20
     seti.validation_words = "one,two,king,kingdom"
     seti.num_sampled = 3
     seti.batches_file = join(tempdir, "TESTBATCHfile")
+    seti.log_dir = join(tempdir, "ftodtflogs")
     ipp = inp.InputProcessor(seti)
     ipp.preprocess()
     inp.write_batches_to_file(ipp.batches(10000), seti.batches_file)
