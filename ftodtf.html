@@ -290,7 +290,7 @@ unarchive functions.</p>
 <p>This module handles the building of the tf execution graph</p>
 <dl class="class">
 <dt id="ftodtf.model.Model">
-<em class="property">class </em><code class="descclassname">ftodtf.model.</code><code class="descname">Model</code><span class="sig-paren">(</span><em>settings</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.model.Model" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="descclassname">ftodtf.model.</code><code class="descname">Model</code><span class="sig-paren">(</span><em>settings</em>, <em>cluster=None</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.model.Model" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Builds and represents the tensorflow computation graph. Exports all important operations via fields</p>
 <p>Constuctor for Model</p>
@@ -298,7 +298,11 @@ unarchive functions.</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>settings</strong> (<a class="reference internal" href="#ftodtf.settings.FasttextSettings" title="ftodtf.settings.FasttextSettings"><em>ftodtf.settings.FasttextSettings</em></a>) – An object encapsulating all the settings for the fasttext-model</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>settings</strong> (<a class="reference internal" href="#ftodtf.settings.FasttextSettings" title="ftodtf.settings.FasttextSettings"><em>ftodtf.settings.FasttextSettings</em></a>) – An object encapsulating all the settings for the fasttext-model</li>
+<li><strong>cluster</strong> – A tf.train.ClusterSpec object describint the tf-cluster. Needed for variable and ops-placement</li>
+</ul>
+</td>
 </tr>
 </tbody>
 </table>
@@ -539,6 +543,50 @@ seperate string like the attribute would do
 <div class="section" id="module-ftodtf.training">
 <span id="ftodtf-training-module"></span><h2>ftodtf.training module<a class="headerlink" href="#module-ftodtf.training" title="Permalink to this headline">¶</a></h2>
 <p>This module handles the training of the word-vectors</p>
+<dl class="class">
+<dt id="ftodtf.training.PrintLossHook">
+<em class="property">class </em><code class="descclassname">ftodtf.training.</code><code class="descname">PrintLossHook</code><span class="sig-paren">(</span><em>every_n_steps</em>, <em>lossop</em>, <em>steptensor</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.training.PrintLossHook" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tensorflow.python.training.basic_session_run_hooks.StepCounterHook</span></code></p>
+<p>Implements a Hook that prints the current step and current average loss every x steps</p>
+<dl class="method">
+<dt id="ftodtf.training.PrintLossHook.after_run">
+<code class="descname">after_run</code><span class="sig-paren">(</span><em>run_context</em>, <em>run_values</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.training.PrintLossHook.after_run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called after each call to run().</p>
+<p>The <cite>run_values</cite> argument contains results of requested ops/tensors by
+<cite>before_run()</cite>.</p>
+<p>The <cite>run_context</cite> argument is the same one send to <cite>before_run</cite> call.
+<cite>run_context.request_stop()</cite> can be called to stop the iteration.</p>
+<p>If <cite>session.run()</cite> raises any exceptions then <cite>after_run()</cite> is not called.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>run_context: A <cite>SessionRunContext</cite> object.
+run_values: A SessionRunValues object.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ftodtf.training.PrintLossHook.before_run">
+<code class="descname">before_run</code><span class="sig-paren">(</span><em>run_context</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.training.PrintLossHook.before_run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called before each call to run().</p>
+<p>You can return from this call a <cite>SessionRunArgs</cite> object indicating ops or
+tensors to add to the upcoming <cite>run()</cite> call.  These ops/tensors will be run
+together with the ops/tensors originally passed to the original run() call.
+The run args you return can also contain feeds to be added to the run()
+call.</p>
+<p>The <cite>run_context</cite> argument is a <cite>SessionRunContext</cite> that provides
+information about the upcoming <cite>run()</cite> call: the originally requested
+op/tensors, the TensorFlow Session.</p>
+<p>At this point graph is finalized and you can not add ops.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>run_context: A <cite>SessionRunContext</cite> object.</dd>
+<dt>Returns:</dt>
+<dd>None or a <cite>SessionRunArgs</cite> object.</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="function">
 <dt id="ftodtf.training.train">
 <code class="descclassname">ftodtf.training.</code><code class="descname">train</code><span class="sig-paren">(</span><em>settings</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.training.train" title="Permalink to this definition">¶</a></dt>
@@ -557,13 +605,56 @@ seperate string like the attribute would do
 <div class="section" id="module-ftodtf.validation">
 <span id="ftodtf-validation-module"></span><h2>ftodtf.validation module<a class="headerlink" href="#module-ftodtf.validation" title="Permalink to this headline">¶</a></h2>
 <p>Handles all evaluation relatet tasks, like printing the nearest neighbors of a word or visualizing the generated vectors</p>
+<dl class="class">
+<dt id="ftodtf.validation.PrintValidationHook">
+<em class="property">class </em><code class="descclassname">ftodtf.validation.</code><code class="descname">PrintValidationHook</code><span class="sig-paren">(</span><em>every_n_steps</em>, <em>validationop</em>, <em>words</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.validation.PrintValidationHook" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tensorflow.python.training.basic_session_run_hooks.StepCounterHook</span></code></p>
+<p>Implements a Hook that prints the resuls of the evaluation every x steps</p>
+<dl class="method">
+<dt id="ftodtf.validation.PrintValidationHook.after_run">
+<code class="descname">after_run</code><span class="sig-paren">(</span><em>run_context</em>, <em>run_values</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.validation.PrintValidationHook.after_run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called after each call to run().</p>
+<p>The <cite>run_values</cite> argument contains results of requested ops/tensors by
+<cite>before_run()</cite>.</p>
+<p>The <cite>run_context</cite> argument is the same one send to <cite>before_run</cite> call.
+<cite>run_context.request_stop()</cite> can be called to stop the iteration.</p>
+<p>If <cite>session.run()</cite> raises any exceptions then <cite>after_run()</cite> is not called.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>run_context: A <cite>SessionRunContext</cite> object.
+run_values: A SessionRunValues object.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ftodtf.validation.PrintValidationHook.before_run">
+<code class="descname">before_run</code><span class="sig-paren">(</span><em>run_context</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.validation.PrintValidationHook.before_run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called before each call to run().</p>
+<p>You can return from this call a <cite>SessionRunArgs</cite> object indicating ops or
+tensors to add to the upcoming <cite>run()</cite> call.  These ops/tensors will be run
+together with the ops/tensors originally passed to the original run() call.
+The run args you return can also contain feeds to be added to the run()
+call.</p>
+<p>The <cite>run_context</cite> argument is a <cite>SessionRunContext</cite> that provides
+information about the upcoming <cite>run()</cite> call: the originally requested
+op/tensors, the TensorFlow Session.</p>
+<p>At this point graph is finalized and you can not add ops.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>run_context: A <cite>SessionRunContext</cite> object.</dd>
+<dt>Returns:</dt>
+<dd>None or a <cite>SessionRunArgs</cite> object.</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
 <dl class="function">
 <dt id="ftodtf.validation.print_similarity_check">
-<code class="descclassname">ftodtf.validation.</code><code class="descname">print_similarity_check</code><span class="sig-paren">(</span><em>similarityop</em>, <em>words</em>, <em>session</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.validation.print_similarity_check" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">ftodtf.validation.</code><code class="descname">print_similarity_check</code><span class="sig-paren">(</span><em>similarity</em>, <em>words</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.validation.print_similarity_check" title="Permalink to this definition">¶</a></dt>
 <dd><p>Print similarity between given words
-:param similarityop: The tensorflow operation returning the computed similarity
-:param list(str) words: Words to print he similarity for
-:param reverse_dictionary: A dict mapping ints (like in words) to their corresponding words</p>
+:param similarity: A matrix of format len(words)xlen(words) containing the similarity between words
+:param list(str) words: Words to print the similarity for</p>
 </dd></dl>
 
 </div>
