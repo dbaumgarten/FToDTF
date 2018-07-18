@@ -31,85 +31,92 @@ def parse_batch_func(batch_size):
 class Model():
     """Builds and represents the tensorflow computation graph. Exports all important operations via fields"""
 
-    def __init__(self, settings):
+    def __init__(self, settings, cluster=None):
         """
         Constuctor for Model
 
         :param settings: An object encapsulating all the settings for the fasttext-model
+        :param cluster: A tf.train.ClusterSpec object describint the tf-cluster. Needed for variable and ops-placement
         :type settings: ftodtf.settings.FasttextSettings
         """
         self.graph = tf.Graph()
 
         with self.graph.as_default():
+            device = None
+            if cluster and settings.ps_list:  # if running distributed use replica_device_setter
+                device = tf.train.replica_device_setter(
+                    worker_device="/job:worker/task:%d" % settings.index, cluster=cluster)
+            # If running distributed pin all ops and assign variables to ps-servers. Else use auto-assignment
+            with tf.device(device):
 
-            inputpipe = tf.data.TFRecordDataset(
-                [settings.batches_file]).repeat()
-            batches = inputpipe.map(parse_batch_func(
-                settings.batch_size), num_parallel_calls=4)
-            batches = batches.prefetch(1)
+                inputpipe = tf.data.TFRecordDataset(
+                    [settings.batches_file]).repeat()
+                batches = inputpipe.map(parse_batch_func(
+                    settings.batch_size), num_parallel_calls=4)
+                batches = batches.prefetch(1)
 
-            iterator = batches.make_initializable_iterator()
-            self._dataset_init = iterator.initializer
-            batch = iterator.get_next()
+                iterator = batches.make_initializable_iterator()
+                self._dataset_init = iterator.initializer
+                batch = iterator.get_next()
 
-            # Input data.
-            with tf.name_scope('inputs'):
-                train_inputs = batch[0]
-                train_labels = batch[1]
+                # Input data.
+                with tf.name_scope('inputs'):
+                    train_inputs = batch[0]
+                    train_labels = batch[1]
 
-            # Create all Weights
-            with tf.name_scope('embeddings'):
-                self.embeddings = tf.Variable(tf.random_uniform(
-                    [settings.num_buckets, settings.embedding_size], -1.0, 1.0))
-            with tf.name_scope('weights'):
-                nce_weights = tf.Variable(
-                    tf.truncated_normal([settings.vocabulary_size, settings.embedding_size], stddev=1.0 / math.sqrt(settings.embedding_size)))
-            with tf.name_scope('biases'):
-                nce_biases = tf.Variable(
-                    tf.zeros([settings.vocabulary_size]))
+                # Create all Weights
+                with tf.name_scope('embeddings'):
+                    self.embeddings = tf.Variable(tf.random_uniform(
+                        [settings.num_buckets, settings.embedding_size], -1.0, 1.0))
+                with tf.name_scope('weights'):
+                    nce_weights = tf.Variable(
+                        tf.truncated_normal([settings.vocabulary_size, settings.embedding_size], stddev=1.0 / math.sqrt(settings.embedding_size)))
+                with tf.name_scope('biases'):
+                    nce_biases = tf.Variable(
+                        tf.zeros([settings.vocabulary_size]))
 
-            # Set the first enty in embeddings (belonging to the padding-ngram) to <0,0,...>
-            self.mask_padding_zero_op = tf.scatter_update(
-                self.embeddings, 0, tf.zeros([settings.embedding_size], dtype=tf.float32))
+                # Set the first enty in embeddings (belonging to the padding-ngram) to <0,0,...>
+                self.mask_padding_zero_op = tf.scatter_update(
+                    self.embeddings, 0, tf.zeros([settings.embedding_size], dtype=tf.float32))
 
-            target_vectors = self._ngrams_to_vectors(train_inputs)
+                target_vectors = self._ngrams_to_vectors(train_inputs)
 
-            with tf.name_scope('loss'):
-                self.loss = tf.reduce_mean(
-                    tf.nn.nce_loss(
-                        weights=nce_weights,
-                        biases=nce_biases,
-                        labels=train_labels,
-                        inputs=target_vectors,
-                        num_sampled=settings.num_sampled,
-                        num_classes=settings.vocabulary_size))
+                with tf.name_scope('loss'):
+                    self.loss = tf.reduce_mean(
+                        tf.nn.nce_loss(
+                            weights=nce_weights,
+                            biases=nce_biases,
+                            labels=train_labels,
+                            inputs=target_vectors,
+                            num_sampled=settings.num_sampled,
+                            num_classes=settings.vocabulary_size))
 
-            # Add the loss value as a scalar to summary.
-            tf.summary.scalar('loss', self.loss)
+                # Add the loss value as a scalar to summary.
+                tf.summary.scalar('loss', self.loss)
 
-            # Keep track of how many iterations we have already done
-            self.step_nr = tf.train.create_global_step(self.graph)
+                # Keep track of how many iterations we have already done
+                self.step_nr = tf.train.create_global_step(self.graph)
 
-            # Learnrate starts at settings.learnrates and will reach ~0 when the training is finished.
-            decaying_learn_rate = settings.learnrate * \
-                (1 - (self.step_nr/settings.steps))
+                # Learnrate starts at settings.learnrates and will reach ~0 when the training is finished.
+                decaying_learn_rate = settings.learnrate * \
+                    (1 - (self.step_nr/settings.steps))
 
-            # Add the learnrate to the summary
-            tf.summary.scalar('learnrate', decaying_learn_rate)
+                # Add the learnrate to the summary
+                tf.summary.scalar('learnrate', decaying_learn_rate)
 
-            with tf.name_scope('optimizer'):
-                self.optimizer = tf.train.GradientDescentOptimizer(
-                    decaying_learn_rate).minimize(self.loss, global_step=self.step_nr)
+                with tf.name_scope('optimizer'):
+                    self.optimizer = tf.train.GradientDescentOptimizer(
+                        decaying_learn_rate).minimize(self.loss, global_step=self.step_nr)
 
-            # Merge all summaries.
-            self.merged = tf.summary.merge_all()
+                # Merge all summaries.
+                self.merged = tf.summary.merge_all()
 
-            # Create a saver to save the trained variables once training is over
-            self._saver = tf.train.Saver()
+                # Create a saver to save the trained variables once training is over
+                self._saver = tf.train.Saver()
 
-            if settings.validation_words:
-                self.validation = self._validationop(
-                    settings.validation_words_list, settings.num_buckets)
+                if settings.validation_words:
+                    self.validation = self._validationop(
+                        settings.validation_words_list, settings.num_buckets)
 
     def _ngrams_to_vectors(self, ngrams):
         """ Convert a batch consisting of lists of ngrams for a word to a list of vectors. One vector for each word

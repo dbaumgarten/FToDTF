@@ -125,8 +125,10 @@ class FasttextSettings:
         """Check if the current settings are valid for training.
         :raises: ValueError if the validation fails """
         try:
-            check_batches_file(self.batches_file)
-            check_log_dir(self.log_dir)
+            if self.job != "ps":
+                check_batches_file(self.batches_file)
+            if self.index == 0 and self.job == "worker":
+                check_log_dir(self.log_dir)
             check_steps(self.steps)
             check_vocabulary_size(self.vocabulary_size)
             check_batch_size(self.batch_size)
