@@ -30,7 +30,7 @@ def test_add_arguments_to_parser(parse, settings):
     args = set([arg for arg in vars(preprocess_parser.parse_args([])).keys()])
     assert {"corpus_path", "batches_file", "vocabulary_size", "batch_size",
             "skip_window", "ngram_size", "num_buckets", "rejection_threshold",
-            "profile"} == args
+            "profile", "num_batch_files"} == args
 
     cli.add_arguments_to_parser(train_sett, train_parser, [])
     args = set([arg for arg in vars(train_parser.parse_args([])).keys()])

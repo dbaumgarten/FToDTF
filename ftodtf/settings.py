@@ -4,7 +4,7 @@ import re
 
 CURRENNT_PATH = os.getcwd()
 DEFAULT_LOGPATH = os.path.join(CURRENNT_PATH, "log")
-DEFAULT_BATCHES_FILE = os.path.join(CURRENNT_PATH, "batches.tfrecord")
+DEFAULT_BATCHES_FILE = os.path.join(CURRENNT_PATH, "batches")
 
 # pylint: disable=R0902,R0903
 
@@ -30,6 +30,7 @@ class FasttextSettings:
     :ivar string job: The role of this node in a distributed setup. Can be worker' or 'ps'.
     :ivar str workers: A comma seperated list of host:port combinations representing the workers in the distributed setup.
     :ivar str ps: A comma seperated list of host:port combinations representing the parameter servers in the distributed setup. If empty a non-distributed setup is assumed.
+    :ivar int num_batch_files: Number of batch files which should be created.
     :ivar int index: The of the node itself in the list of --workers (or --ps, depending on --job).
     """
 
@@ -53,6 +54,7 @@ class FasttextSettings:
         self.index = 0
         self.workers = "localhost:7777"
         self.ps = ""
+        self.num_batch_files = 1
 
     @staticmethod
     def preprocessing_settings():
@@ -62,7 +64,7 @@ class FasttextSettings:
         """
         return ["corpus_path", "batches_file", "vocabulary_size",
                 "batch_size", "skip_window", "ngram_size", "num_buckets",
-                "rejection_threshold", "profile"]
+                "rejection_threshold", "profile", "num_batch_files"]
 
     @staticmethod
     def training_settings():
