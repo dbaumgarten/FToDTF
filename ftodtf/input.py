@@ -133,15 +133,23 @@ def inform_progressbar(func):
 
 
 @inform_progressbar
-def write_batches_to_file(batchgenerator, filename):
-    """ Writes the batches obtained from batchgenerator to a file.
+def write_batches_to_file(batchgenerator, filename, num_batch_files):
+    """ Writes the batches obtained from batchgenerator to files.
 
     :param batchgenerator: A generator yielding training-batches
     :param str filename: The full path of the file into which the batches should be written
+    :param int num_batch_files: The number of files.
     """
-    writer = tf.python_io.TFRecordWriter(filename)
+
+    writers = []
+    for k in range(0, num_batch_files):
+        writers.append(tf.python_io.TFRecordWriter(filename+'_'+str(k)+'.tfrecord'))
+
+    writer_index = 0
+    batch_counter = 0
     for batch in batchgenerator:
         flattened = []
+        batch_counter += 1
         for x in batch[0]:
             for y in x:
                 flattened.append(y)
@@ -152,9 +160,15 @@ def write_batches_to_file(batchgenerator, filename):
         }
         example = tf.train.Example(
             features=tf.train.Features(feature=features))
-        writer.write(example.SerializeToString())
-    writer.flush()
-    writer.close()
+        writers[writer_index].write(example.SerializeToString())
+
+        # Every 1000 batches change the file
+        if batch_counter % 1000 == 0:
+            writer_index = (writer_index+1) % num_batch_files
+
+    for writer in writers:
+        writer.flush()
+        writer.close()
 
 
 class InputProcessor:

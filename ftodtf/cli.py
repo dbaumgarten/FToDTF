@@ -116,7 +116,8 @@ def cli_main():
             ipp = ftodtf.input.InputProcessor(SETTINGS)
             ipp.preprocess()
             ftodtf.input.write_batches_to_file(ipp.batches(),
-                                               SETTINGS.batches_file)
+                                               SETTINGS.batches_file,
+                                               SETTINGS.num_batch_files)
             p.join()
     elif flags.command == "train":
         try:

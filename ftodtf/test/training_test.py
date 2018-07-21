@@ -49,5 +49,5 @@ def test_fasttext():
     seti.log_dir = join(tempdir, "ftodtflogs")
     ipp = inp.InputProcessor(seti)
     ipp.preprocess()
-    inp.write_batches_to_file(ipp.batches(10000), seti.batches_file)
+    inp.write_batches_to_file(ipp.batches(10000), seti.batches_file, 1)
     ft.train(seti)
