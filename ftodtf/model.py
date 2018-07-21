@@ -65,9 +65,30 @@ class Model():
                     train_labels = batch[1]
 
                 # Create all Weights
-                with tf.name_scope('embeddings'):
-                    self.embeddings = tf.Variable(tf.random_uniform(
-                        [settings.num_buckets, settings.embedding_size], -1.0, 1.0))
+                self.embeddings = tf.create_partitioned_variables(
+                    shape=[settings.num_buckets, settings.embedding_size],
+                    slicing=[len(settings.ps_list)
+                             if settings.ps_list else 1,
+                             1],
+                    initializer=tf.random_uniform(
+                        [settings.num_buckets, settings.embedding_size], -1.0, 1.0),
+                    dtype=tf.float32,
+                    trainable=True,
+                    name="embeddings"
+                )
+
+                tf.create_partitioned_variables(
+                    shape=[settings.num_buckets, settings.embedding_size],
+                    slicing=[len(settings.ps_list)
+                             if settings.ps_list else 1,
+                             1],
+                    initializer=tf.random_uniform(
+                        [settings.num_buckets, settings.embedding_size], -1.0, 1.0),
+                    dtype=tf.float32,
+                    trainable=True,
+                    name="weights"
+                )
+
                 with tf.name_scope('weights'):
                     nce_weights = tf.Variable(
                         tf.truncated_normal([settings.vocabulary_size, settings.embedding_size], stddev=1.0 / math.sqrt(settings.embedding_size)))
@@ -75,9 +96,9 @@ class Model():
                     nce_biases = tf.Variable(
                         tf.zeros([settings.vocabulary_size]))
 
-                # Set the first enty in embeddings (belonging to the padding-ngram) to <0,0,...>
+                # Set the first enty in embeddings (or of partitioned, the first entry of the first partition) (belonging to the padding-ngram) to <0,0,...>
                 self.mask_padding_zero_op = tf.scatter_update(
-                    self.embeddings, 0, tf.zeros([settings.embedding_size], dtype=tf.float32))
+                    self.embeddings[0], 0, tf.zeros([settings.embedding_size], dtype=tf.float32))
 
                 target_vectors = self._ngrams_to_vectors(train_inputs)
 

@@ -34,12 +34,8 @@ There is docker-compose file demonstrating the distributed setup op this program
 ```
 sudo docker-compose up
 ```
-This will start a cluster consisting of two workers and one parameter server on your machine.  
-Each time you restart the cluster it will continue to work from the last checkpoint. If you want to start from zero run:
-```
-sudo docker-compose down
-sudo docker volume rm ftodtf_checkpoint
-```
+This will start a cluster consisting of two workers and two parameter servers on your machine.  
+Each time you restart the cluster it will continue to work from the last checkpoint. If you want to start from zero delete the contents of ./log/distributed on the server of worker0
 Please note that running a cluster on a single machine is slower then running a single instance directly on this machine. To see some speedup you will need to use multiple independent machines.
 
 ## Known Bugs and Limitations
