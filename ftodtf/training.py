@@ -23,11 +23,8 @@
 # ==============================================================================
 """ This module handles the training of the word-vectors"""
 import os
-import sys
 
 import tensorflow as tf
-
-import ftodtf.input as inp
 import ftodtf.model as model
 import ftodtf.validation
 

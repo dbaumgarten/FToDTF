@@ -77,24 +77,21 @@ class Model():
                     name="embeddings"
                 )
 
-                tf.create_partitioned_variables(
-                    shape=[settings.num_buckets, settings.embedding_size],
+                nce_weights = tf.create_partitioned_variables(
+                    shape=[settings.vocabulary_size, settings.embedding_size],
                     slicing=[len(settings.ps_list)
                              if settings.ps_list else 1,
                              1],
-                    initializer=tf.random_uniform(
-                        [settings.num_buckets, settings.embedding_size], -1.0, 1.0),
+                    initializer=tf.truncated_normal(
+                        [settings.vocabulary_size, settings.embedding_size], stddev=1.0 / math.sqrt(settings.embedding_size)),
                     dtype=tf.float32,
                     trainable=True,
                     name="weights"
                 )
 
-                with tf.name_scope('weights'):
-                    nce_weights = tf.Variable(
-                        tf.truncated_normal([settings.vocabulary_size, settings.embedding_size], stddev=1.0 / math.sqrt(settings.embedding_size)))
-                with tf.name_scope('biases'):
-                    nce_biases = tf.Variable(
-                        tf.zeros([settings.vocabulary_size]))
+                nce_biases = tf.Variable(
+                    name="biases",
+                    initial_value=tf.zeros([settings.vocabulary_size]))
 
                 # Set the first enty in embeddings (or of partitioned, the first entry of the first partition) (belonging to the padding-ngram) to <0,0,...>
                 self.mask_padding_zero_op = tf.scatter_update(
