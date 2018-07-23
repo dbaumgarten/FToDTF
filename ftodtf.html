@@ -357,7 +357,7 @@ unarchive functions.</p>
 <li><strong>vocabulary_size</strong> (<em>int</em>) – How many words the vocabulary will have. Only the vocabulary_size most frequent words will be processed.</li>
 <li><strong>batch_size</strong> (<em>int</em>) – How many trainings-samples to process per batch.</li>
 <li><strong>embedding_size</strong> (<em>int</em>) – Dimension of the computed embedding vectors.</li>
-<li><strong>skip_window</strong> (<em>int</em>) – How many words to consider left and right of the target-word.</li>
+<li><strong>skip_window</strong> (<em>int</em>) – How many words to consider left and right of the target-word maximally. The actual window is randomly sampled for each word between 1 and this value</li>
 <li><strong>num_sampled</strong> (<em>int</em>) – Number of negative examples to sample when computing the nce_loss.</li>
 <li><strong>ngram_size</strong> (<em>int</em>) – How large the ngrams (in which the target words are split) should be.</li>
 <li><strong>num_buckets</strong> (<em>int</em>) – How many hash-buckets to use when hashing the ngrams to numbers.</li>
