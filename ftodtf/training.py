@@ -65,13 +65,14 @@ class PrintLossHook(tf.train.StepCounterHook):
 
     def after_run(self, run_context, run_values):
         loss, step = run_values.results
-        self.cumloss += loss
-        self.stepcounter += 1
         if self.stepcounter == self.every_n_steps:
             print("Step {}: Loss: {}".format(
                 step, self.cumloss/(self.stepcounter)))
             self.cumloss = 0
-            self.stepcounter = 0
+            self.stepcounter = 1
+        else:
+            self.cumloss += loss
+            self.stepcounter += 1
 
 
 def train(settings):
