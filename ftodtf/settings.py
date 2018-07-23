@@ -19,7 +19,7 @@ class FasttextSettings:
     :ivar int vocabulary_size: How many words the vocabulary will have. Only the vocabulary_size most frequent words will be processed.
     :ivar int batch_size: How many trainings-samples to process per batch.
     :ivar int embedding_size: Dimension of the computed embedding vectors.
-    :ivar int skip_window: How many words to consider left and right of the target-word.
+    :ivar int skip_window: How many words to consider left and right of the target-word maximally. The actual window is randomly sampled for each word between 1 and this value
     :ivar int num_sampled: Number of negative examples to sample when computing the nce_loss.
     :ivar int ngram_size: How large the ngrams (in which the target words are split) should be.
     :ivar int num_buckets: How many hash-buckets to use when hashing the ngrams to numbers.
@@ -42,7 +42,7 @@ class FasttextSettings:
         self.vocabulary_size = 50000
         self.batch_size = 128
         self.embedding_size = 300
-        self.skip_window = 1
+        self.skip_window = 5
         self.num_sampled = 5
         self.ngram_size = 3
         self.num_buckets = 10000   # In paper 210**6, but "test_fasttext" will fail
