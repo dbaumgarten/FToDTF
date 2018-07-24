@@ -14,7 +14,7 @@ class FasttextSettings:
 
     :ivar str corpus_path: Path to the file containing text for training the model.
     :ivar str batches_file: The Filename for the file containing the training-batches. The file is written by the preprocess command and read by the train command.
-    :ivar str log_dir: Directory to write the generated files (e.g. the computed word-vectors) to.
+    :ivar str log_dir: Directory to write the generated files (e.g. the computed word-vectors) to and read/write checkoints from.
     :ivar int steps: How many training steps to perform.
     :ivar int vocabulary_size: How many words the vocabulary will have. Only the vocabulary_size most frequent words will be processed.
     :ivar int batch_size: How many trainings-samples to process per batch.
@@ -72,12 +72,18 @@ class FasttextSettings:
         command """
         return ["batches_file", "log_dir", "steps", "vocabulary_size",
                 "batch_size", "embedding_size", "num_sampled", "num_buckets",
-                "validation_words", "profile", "learnrate", "save_mode"]
+                "validation_words", "profile", "learnrate"]
 
     @staticmethod
     def distribution_settings():
         """ Returns the names of the settings that are used for configuren the tensoflow-cluster """
         return ["job", "index", "workers", "ps"]
+
+    @staticmethod
+    def inference_settings():
+        """ Returns the names of the settings that are used for the infer
+        command """
+        return ["log_dir", "embedding_size", "num_buckets"]
 
     @property
     def validation_words_list(self):

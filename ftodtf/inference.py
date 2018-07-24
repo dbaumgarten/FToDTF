@@ -7,7 +7,11 @@ import ftodtf.input as inp
 
 
 def compute_similarities(words, settings):
-    """ Use trained embeddigs to compute the similarity between given input-words"""
+    """ Use trained embeddigs to compute the similarity between given input-words
+
+    :param list(str) words: A list of words to compare to each other
+    :param ftodtf.settings.FastTextSettings settings: The settings for the fasttext-model
+    """
     m = model.InferenceModel(settings)
     sess = tf.Session(graph=m.graph)
     m.load(settings.log_dir, sess)

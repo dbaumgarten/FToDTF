@@ -236,7 +236,6 @@ class InferenceModel():
         if not ckpts:
             raise FileNotFoundError("No checkpoint found inside the log_dir")
         ckpts = sorted(ckpts)
-        print(ckpts)
         checkpointfile = os.path.join(logdir, "model.ckpt-"+str(ckpts[-1]))
         print("Loading checkpoint:", checkpointfile)
         self.saver.restore(session, checkpointfile)
