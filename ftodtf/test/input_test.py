@@ -183,5 +183,5 @@ def test_write_batches_to_file():
     ipp.preprocess()
     batches = ipp.batches(100000)
     inp.write_batches_to_file(batches, SETTINGS.batches_file, 1)
-    filesize = os.stat(SETTINGS.batches_file+'_0.tfrecord').st_size
+    filesize = os.stat(SETTINGS.batches_file).st_size
     assert filesize > 100

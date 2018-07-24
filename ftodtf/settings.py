@@ -4,7 +4,7 @@ import re
 
 CURRENNT_PATH = os.getcwd()
 DEFAULT_LOGPATH = os.path.join(CURRENNT_PATH, "log")
-DEFAULT_BATCHES_FILE = os.path.join(CURRENNT_PATH, "batches")
+DEFAULT_BATCHES_FILE = os.path.join(CURRENNT_PATH, "batches.tfrecord")
 
 # pylint: disable=R0902,R0903
 
