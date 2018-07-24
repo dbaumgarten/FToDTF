@@ -143,7 +143,8 @@ def write_batches_to_file(batchgenerator, filename, num_batch_files):
 
     writers = []
     for k in range(0, num_batch_files):
-        writers.append(tf.python_io.TFRecordWriter(filename+'_'+str(k)+'.tfrecord'))
+        writers.append(tf.python_io.TFRecordWriter(
+            filename+'_'+str(k)+'.tfrecord'))
 
     writer_index = 0
     batch_counter = 0
@@ -169,6 +170,24 @@ def write_batches_to_file(batchgenerator, filename, num_batch_files):
     for writer in writers:
         writer.flush()
         writer.close()
+
+
+def words_to_ngramhashes(words, num_buckets):
+    """ Converts a list of words into a list of padded lists of ngrams-hashes.
+    The resulting matrix can then be used to compute the word-verctors for the original words
+    :param list(str) words: The words to convert
+    :param int num_buckets: The number of hash-buckets to use when hashing the ngrams
+    :returns: list(list(int))
+    """
+
+    ngs = [generate_ngram_per_word(x) for x in words]
+    maxlen = 0
+    for ng in ngs:
+        maxlen = max(maxlen, len(ng))
+    for i, _ in enumerate(ngs):
+        ngs[i] = hash_string_list(ngs[i], num_buckets-1, 1)
+        ngs[i] = pad_to_length(ngs[i], maxlen, pad=0)
+    return ngs
 
 
 class InputProcessor:
@@ -201,7 +220,7 @@ class InputProcessor:
         total_sum = sum(self.wordcount.values())
         # drop probability for a word in the corpus
         self.drop_p_word = {word: 1-np.sqrt(self.settings.rejection_threshold /
-                            (self.wordcount[word] / total_sum))
+                                            (self.wordcount[word] / total_sum))
                             for word in self.wordcount}
         idx = 0
         self.dict = {}
@@ -235,7 +254,8 @@ class InputProcessor:
                 for i in range(0, mp.cpu_count()):
                     corpus_chunks.append(
                         corpus[i * size_per_cpu:(i + 1) * size_per_cpu])
-                result = pool.map(self._find_and_clean_sentences, corpus_chunks)
+                result = pool.map(
+                    self._find_and_clean_sentences, corpus_chunks)
 
                 for sentence_bundle in result:
                     for sentence in sentence_bundle:
@@ -283,29 +303,23 @@ class InputProcessor:
             else:
                 yield (target_word, context_word)
 
-
     def string_samples(self):
         """ Returns a generator for samples (targetword->contextword)
         :returns: A generator yielding 2-tuple consisting of a target-word and a context word.
         """
-        # possible positions of context-words relative to a target word
-        contextoffsets = [
-            x for x in range(-self.settings.skip_window, self.settings.skip_window+1) if x != 0]
-        #with open(self.settings.corpus_path) as f:
         for words in self.sentences:
             words = words.split()
             idx = 0
             for word in words:
-                # choose a random context word. Take special care to stay in the bounds of the list
-                contextoffset = random.choice(contextoffsets)
-                contextindex = idx+contextoffset
-                    # if selected index-offset reaches outside of the list, try the other direction
-                if idx+contextoffset < 0 or idx+contextoffset >= len(words):
-                    contextoffset = contextoffset*-1
-                        # above fails if the current line is to short. Stay inside the bounds at all cost!
-                    contextindex = min(
-                        len(words)-1, max(0, idx+contextoffset))
-                yield (word, words[contextindex])
+                window = random.randint(1, self.settings.skip_window)
+                contextoffsets = [
+                    x for x in range(-window, window+1) if x != 0]
+                for contextoffset in contextoffsets:
+                    contextindex = idx+contextoffset
+                    # if selected index-offset reaches outside of the list, discard the contextword
+                    if idx+contextoffset < 0 or idx+contextoffset >= len(words):
+                        continue
+                    yield (word, words[contextindex])
                 idx += 1
 
     def _lookup_label(self, gen):

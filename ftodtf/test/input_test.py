@@ -30,6 +30,7 @@ def setup_module():
 def teardown_module():
     os.remove(TESTFILENAME)
 
+
 def test_generate_ngram_per_word():
     word = "diesisteintest"
     wanted = ["*di", "die", "ies", "esi", "sis", "ist", "ste", "tei",
@@ -59,17 +60,11 @@ def test_string_samples():
     samples = ipp.string_samples()
     sample = samples.__next__()
     assert sample[0] == "dies"
-    assert sample[1] == "ist"
-    sample = samples.__next__()
+    while sample[0] != "ist":
+        assert sample[1] in ["ist", "eine", "test", "datei", "der"]
+        sample = samples.__next__()
     assert sample[0] == "ist"
-    assert sample[1] == "dies" or sample[1] == "eine"
-
-
-def test_string_samples2():
-    ipp = inp.InputProcessor(SETTINGS)
-    ipp.preprocess()
-    samples = list(ipp.string_samples())
-    assert len(samples) == 13
+    assert sample[1] in ["dies", "eine", "test", "datei", "der"]
 
 
 def test_lookup_label():

@@ -22,7 +22,7 @@ def test_preprocessing_settings():
 def test_training_settings():
     train_seti = {"batches_file", "log_dir", "steps", "vocabulary_size",
                   "batch_size", "embedding_size", "num_sampled", "num_buckets",
-                  "validation_words", "profile", "learnrate", "save_mode"}
+                  "validation_words", "profile", "learnrate"}
     assert len(train_seti) == len(
         ftodtf.settings.FasttextSettings.training_settings())
     assert train_seti == set(

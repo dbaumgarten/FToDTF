@@ -14,12 +14,12 @@ class FasttextSettings:
 
     :ivar str corpus_path: Path to the file containing text for training the model.
     :ivar str batches_file: The Filename for the file containing the training-batches. The file is written by the preprocess command and read by the train command.
-    :ivar str log_dir: Directory to write the generated files (e.g. the computed word-vectors) to.
+    :ivar str log_dir: Directory to write the generated files (e.g. the computed word-vectors) to and read/write checkoints from.
     :ivar int steps: How many training steps to perform.
     :ivar int vocabulary_size: How many words the vocabulary will have. Only the vocabulary_size most frequent words will be processed.
     :ivar int batch_size: How many trainings-samples to process per batch.
     :ivar int embedding_size: Dimension of the computed embedding vectors.
-    :ivar int skip_window: How many words to consider left and right of the target-word.
+    :ivar int skip_window: How many words to consider left and right of the target-word maximally. The actual window is randomly sampled for each word between 1 and this value
     :ivar int num_sampled: Number of negative examples to sample when computing the nce_loss.
     :ivar int ngram_size: How large the ngrams (in which the target words are split) should be.
     :ivar int num_buckets: How many hash-buckets to use when hashing the ngrams to numbers.
@@ -42,7 +42,7 @@ class FasttextSettings:
         self.vocabulary_size = 50000
         self.batch_size = 128
         self.embedding_size = 300
-        self.skip_window = 1
+        self.skip_window = 5
         self.num_sampled = 5
         self.ngram_size = 3
         self.num_buckets = 10000   # In paper 210**6, but "test_fasttext" will fail
@@ -72,12 +72,18 @@ class FasttextSettings:
         command """
         return ["batches_file", "log_dir", "steps", "vocabulary_size",
                 "batch_size", "embedding_size", "num_sampled", "num_buckets",
-                "validation_words", "profile", "learnrate", "save_mode"]
+                "validation_words", "profile", "learnrate"]
 
     @staticmethod
     def distribution_settings():
         """ Returns the names of the settings that are used for configuren the tensoflow-cluster """
         return ["job", "index", "workers", "ps"]
+
+    @staticmethod
+    def inference_settings():
+        """ Returns the names of the settings that are used for the infer
+        command """
+        return ["log_dir", "embedding_size", "num_buckets"]
 
     @property
     def validation_words_list(self):

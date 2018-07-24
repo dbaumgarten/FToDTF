@@ -8,6 +8,7 @@ from tqdm import tqdm
 import ftodtf.model
 import ftodtf.training
 import ftodtf.input
+import ftodtf.inference
 from ftodtf.settings import FasttextSettings
 
 
@@ -20,6 +21,9 @@ PARSER = argparse.ArgumentParser(
 SUBPARSER = PARSER.add_subparsers(dest="command")
 PREPROCESS_PARSER = SUBPARSER.add_parser("preprocess")
 TRAIN_PARSER = SUBPARSER.add_parser("train")
+INFER_PARSER = SUBPARSER.add_parser("infer")
+INFER_SUBPARSER = INFER_PARSER.add_subparsers(dest="subcommand")
+INFER_SIMILARITIES = INFER_SUBPARSER.add_parser("similarities")
 
 
 def add_arguments_to_parser(arglist, parser, required, group=None):
@@ -50,6 +54,12 @@ add_arguments_to_parser(SETTINGS.distribution_settings(),
                         TRAIN_PARSER,
                         [],
                         "Distribution settings")
+
+add_arguments_to_parser(SETTINGS.inference_settings(),
+                        INFER_PARSER,
+                        [])
+
+INFER_SIMILARITIES.add_argument("words", type=str, nargs="+")
 
 
 def spawn_progress_bar():
@@ -127,6 +137,8 @@ def cli_main():
             sys.exit(1)
         else:
             ftodtf.training.train(SETTINGS)
+    elif flags.command == "infer" and flags.subcommand == "similarities":
+        ftodtf.inference.compute_similarities(flags.words, SETTINGS)
     else:
         PARSER.print_help()
 

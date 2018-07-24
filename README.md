@@ -18,7 +18,12 @@ After installing just run
 fasttext preprocess --corpus_path <your-training-data>
 fasttext train
 ```  
-in your console
+in your console.  
+After you have trained for some time you can try out the trained word-vectors:
+```
+fasttext infer similarity the quick brown fox
+```
+This will calculate and print the similarity between the words the, quick, brown and fox.
 
 ## Docker
 This application is also available as pre-built docker-image (https://hub.docker.com/r/dbaumgarten/ftodtf/)

@@ -1,7 +1,9 @@
 """This module handles the building of the tf execution graph"""
 import math
+import os
 import tensorflow as tf
 import ftodtf.input as inp
+import re
 
 
 def parse_batch_func(batch_size):
@@ -28,8 +30,8 @@ def parse_batch_func(batch_size):
     return parse
 
 
-class Model():
-    """Builds and represents the tensorflow computation graph. Exports all important operations via fields"""
+class TrainingModel():
+    """Builds and represents the tensorflow computation graph for the training of the embeddings. Exports all important operations via fields"""
 
     def __init__(self, settings, cluster=None):
         """
@@ -65,17 +67,7 @@ class Model():
                     train_labels = batch[1]
 
                 # Create all Weights
-                self.embeddings = tf.create_partitioned_variables(
-                    shape=[settings.num_buckets, settings.embedding_size],
-                    slicing=[len(settings.ps_list)
-                             if settings.ps_list else 1,
-                             1],
-                    initializer=tf.random_uniform(
-                        [settings.num_buckets, settings.embedding_size], -1.0, 1.0),
-                    dtype=tf.float32,
-                    trainable=True,
-                    name="embeddings"
-                )
+                self.embeddings = create_embedding_weights(settings)
 
                 nce_weights = tf.create_partitioned_variables(
                     shape=[settings.vocabulary_size, settings.embedding_size],
@@ -93,11 +85,8 @@ class Model():
                     name="biases",
                     initial_value=tf.zeros([settings.vocabulary_size]))
 
-                # Set the first enty in embeddings (or of partitioned, the first entry of the first partition) (belonging to the padding-ngram) to <0,0,...>
-                self.mask_padding_zero_op = tf.scatter_update(
-                    self.embeddings[0], 0, tf.zeros([settings.embedding_size], dtype=tf.float32))
-
-                target_vectors = self._ngrams_to_vectors(train_inputs)
+                target_vectors = ngrams_to_vectors(
+                    train_inputs, self.embeddings)
 
                 with tf.name_scope('loss'):
                     self.loss = tf.reduce_mean(
@@ -132,49 +121,13 @@ class Model():
                 # Create a saver to save the trained variables once training is over
                 self._saver = tf.train.Saver()
 
-                if settings.validation_words:
-                    self.validation = self._validationop(
+                if settings.validation_words_list:
+                    ngrams = inp.words_to_ngramhashes(
                         settings.validation_words_list, settings.num_buckets)
-
-    def _ngrams_to_vectors(self, ngrams):
-        """ Convert a batch consisting of lists of ngrams for a word to a list of vectors. One vector for each word
-
-        :param ngrams: A batch of lists of ngrams
-        :returns: a batch of vectors
-        """
-        # Lookup the vector for each hashed value. The hash-value 0 (the value for the ngram "") will always et a 0-vector
-        with tf.control_dependencies([self.mask_padding_zero_op]):
-            looked_up = tf.nn.embedding_lookup(self.embeddings, ngrams)
-            # sum all ngram-vectors to get a word-vector
-            summed = tf.reduce_sum(looked_up, 1)
-            return summed
-
-    def _validationop(self, compare, num_buckets):
-        """This Operation is used to regularily computed the words closest to some input words. This way a human can judge if the training is really making usefull progress
-
-        :param list(str) compare: A list of strings representing the words to find similar words of
-        :param int num_buckets: The number of hash-buckets used when hashing ngrams
-        """
-
-        # ngrammize and pad the words
-        ngrams = [inp.generate_ngram_per_word(x) for x in compare]
-        maxlen = 0
-        for ng in ngrams:
-            maxlen = max(maxlen, len(ng))
-        for i, _ in enumerate(ngrams):
-            ngrams[i] = inp.hash_string_list(ngrams[i], num_buckets-1, 1)
-            ngrams[i] = inp.pad_to_length(ngrams[i], maxlen, pad=0)
-
-        dataset = tf.constant(ngrams, dtype=tf.int64,
-                              shape=[len(compare), maxlen])
-        vectors = self._ngrams_to_vectors(dataset)
-
-        # normalize word-vectors before computing dot-product (so the results stay between -1 and 1)
-        norm = tf.sqrt(tf.reduce_sum(
-            tf.square(vectors), 1, keep_dims=True))
-        normalized_embeddings = vectors / norm
-
-        return tf.matmul(normalized_embeddings, normalized_embeddings, transpose_b=True)
+                    ngramstensor = tf.constant(ngrams, dtype=tf.int64, shape=[
+                                               len(ngrams), len(ngrams[0])])
+                    self.validation = compute_word_similarities(
+                        ngramstensor, self.embeddings)
 
     def get_scaffold(self):
         """ Returns a tf.train.Scaffold object describing this graph
@@ -188,3 +141,101 @@ class Model():
             saver=self._saver,
             summary_op=self.merged
         )
+
+
+def ngrams_to_vectors(ngrams, embeddings):
+    """ Create a tensorflow operation converting a batch consisting of lists of ngrams for a word to a list of vectors. One vector for each word
+
+    :param ngrams: A batch of lists of ngrams
+    :param embeddings: The embeddings to use as tensorflow variable. Can also be a list of variables.
+    :returns: a batch of vectors
+    """
+
+    first_part_of_embeddings = embeddings
+    if isinstance(embeddings, list):
+        first_part_of_embeddings = embeddings[0]
+
+    # Set the first enty in embeddings (or of partitioned, the first entry of the first partition) (belonging to the padding-ngram) to <0,0,...>
+    mask_padding_zero_op = tf.scatter_update(
+        first_part_of_embeddings, 0, tf.zeros([first_part_of_embeddings.shape[1]], dtype=tf.float32))
+
+    # Lookup the vector for each hashed value. The hash-value 0 (the value for the ngram "") will always et a 0-vector
+    with tf.control_dependencies([mask_padding_zero_op]):
+        looked_up = tf.nn.embedding_lookup(embeddings, ngrams)
+        # sum all ngram-vectors to get a word-vector
+        summed = tf.reduce_sum(looked_up, 1)
+        return summed
+
+
+def compute_word_similarities(ngramhashmatrix, embeddings):
+    """Returns a tensorflow-operation that computes the similarities between all input-words using the given embeddings
+
+    :param tf.Tensor ngramhashmatrix: A list of lists of ngram-hashes, each list represents the ngrams for one word. (In principle a trainings-batch without labels)
+    :param tf.Tensor embeddings: The embeddings to use for converting words to vectors. (Can be a list of tensors)
+    :param int num_buckets: The number of hash-buckets used when hashing ngrams
+    """
+
+    vectors = ngrams_to_vectors(ngramhashmatrix, embeddings)
+
+    # normalize word-vectors before computing dot-product (so the results stay between -1 and 1)
+    norm = tf.sqrt(tf.reduce_sum(
+        tf.square(vectors), 1, keep_dims=True))
+    normalized_embeddings = vectors / norm
+
+    return tf.matmul(normalized_embeddings, normalized_embeddings, transpose_b=True)
+
+
+def create_embedding_weights(settings):
+    """ Creates a (partitioned) tensorflow variable for the word-embeddings
+    Exists as seperate function to minimize code-duplication between training and inference-models
+    """
+
+    return tf.create_partitioned_variables(
+        shape=[settings.num_buckets, settings.embedding_size],
+        slicing=[len(settings.ps_list)
+                 if settings.ps_list else 1,
+                 1],
+        initializer=tf.random_uniform(
+            [settings.num_buckets, settings.embedding_size], -1.0, 1.0),
+        dtype=tf.float32,
+        trainable=True,
+        name="embeddings"
+    )
+
+
+class InferenceModel():
+    """Builds and represents the tensorflow computation graph for using the trained embeddings. Exports all important operations via fields.
+        An existing checkpoint must be loaded via load() before this model can be used to compute anything.
+    """
+
+    def __init__(self, settings):
+        """
+        Constuctor for Model
+
+        :param settings: An object encapsulating all the settings for the fasttext-model
+        :type settings: ftodtf.settings.FasttextSettings
+        """
+        self.graph = tf.Graph()
+
+        with self.graph.as_default():
+            self.words_to_compare = tf.placeholder(tf.int64)
+            self.embeddings = create_embedding_weights(settings)
+            self.similarities = compute_word_similarities(
+                self.words_to_compare, self.embeddings)
+            self.saver = tf.train.Saver()
+
+    def load(self, logdir, session):
+        """ Loades pre-trained embeddings from the filesystem
+
+        :param str logdir: The path of the folder where the checkpoints created by the training were saved
+        :param tf.Session session: The session to restore the variables into
+        """
+        rex = re.compile("model\\.ckpt-([0-9]+)\\.index")
+        files = os.listdir(logdir)
+        ckpts = [int(y.group(1)) for y in [rex.match(x) for x in files] if y]
+        if not ckpts:
+            raise FileNotFoundError("No checkpoint found inside the log_dir")
+        ckpts = sorted(ckpts)
+        checkpointfile = os.path.join(logdir, "model.ckpt-"+str(ckpts[-1]))
+        print("Loading checkpoint:", checkpointfile)
+        self.saver.restore(session, checkpointfile)
