@@ -12,6 +12,14 @@ ftodtf.cli module
     :undoc-members:
     :show-inheritance:
 
+ftodtf.inference module
+-----------------------
+
+.. automodule:: ftodtf.inference
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 ftodtf.input module
 -------------------
 
@@ -40,14 +48,6 @@ ftodtf.training module
 ----------------------
 
 .. automodule:: ftodtf.training
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-ftodtf.validation module
-------------------------
-
-.. automodule:: ftodtf.validation
     :members:
     :undoc-members:
     :show-inheritance:

@@ -44,7 +44,8 @@
  | <a href="#G"><strong>G</strong></a>
  | <a href="#H"><strong>H</strong></a>
  | <a href="#I"><strong>I</strong></a>
- | <a href="#M"><strong>M</strong></a>
+ | <a href="#L"><strong>L</strong></a>
+ | <a href="#N"><strong>N</strong></a>
  | <a href="#P"><strong>P</strong></a>
  | <a href="#S"><strong>S</strong></a>
  | <a href="#T"><strong>T</strong></a>
@@ -58,10 +59,10 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ftodtf.html#ftodtf.cli.add_arguments_to_parser">add_arguments_to_parser() (in module ftodtf.cli)</a>
 </li>
-      <li><a href="ftodtf.html#ftodtf.training.PrintLossHook.after_run">after_run() (ftodtf.training.PrintLossHook method)</a>
+      <li><a href="ftodtf.html#ftodtf.inference.PrintSimilarityHook.after_run">after_run() (ftodtf.inference.PrintSimilarityHook method)</a>
 
       <ul>
-        <li><a href="ftodtf.html#ftodtf.validation.PrintValidationHook.after_run">(ftodtf.validation.PrintValidationHook method)</a>
+        <li><a href="ftodtf.html#ftodtf.training.PrintLossHook.after_run">(ftodtf.training.PrintLossHook method)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -78,10 +79,10 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="ftodtf.html#ftodtf.training.PrintLossHook.before_run">before_run() (ftodtf.training.PrintLossHook method)</a>
+      <li><a href="ftodtf.html#ftodtf.inference.PrintSimilarityHook.before_run">before_run() (ftodtf.inference.PrintSimilarityHook method)</a>
 
       <ul>
-        <li><a href="ftodtf.html#ftodtf.validation.PrintValidationHook.before_run">(ftodtf.validation.PrintValidationHook method)</a>
+        <li><a href="ftodtf.html#ftodtf.training.PrintLossHook.before_run">(ftodtf.training.PrintLossHook method)</a>
 </li>
       </ul></li>
   </ul></td>
@@ -108,10 +109,10 @@
 </li>
       <li><a href="ftodtf.html#ftodtf.settings.check_ngram_size">check_ngram_size() (in module ftodtf.settings)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ftodtf.html#ftodtf.settings.check_nodelist">check_nodelist() (in module ftodtf.settings)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ftodtf.html#ftodtf.settings.check_num_buckets">check_num_buckets() (in module ftodtf.settings)</a>
 </li>
       <li><a href="ftodtf.html#ftodtf.settings.check_num_sampled">check_num_sampled() (in module ftodtf.settings)</a>
@@ -127,6 +128,12 @@
       <li><a href="ftodtf.html#ftodtf.settings.check_vocabulary_size">check_vocabulary_size() (in module ftodtf.settings)</a>
 </li>
       <li><a href="ftodtf.html#ftodtf.cli.cli_main">cli_main() (in module ftodtf.cli)</a>
+</li>
+      <li><a href="ftodtf.html#ftodtf.inference.compute_similarities">compute_similarities() (in module ftodtf.inference)</a>
+</li>
+      <li><a href="ftodtf.html#ftodtf.model.compute_word_similarities">compute_word_similarities() (in module ftodtf.model)</a>
+</li>
+      <li><a href="ftodtf.html#ftodtf.model.create_embedding_weights">create_embedding_weights() (in module ftodtf.model)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -148,17 +155,17 @@
 </li>
       <li><a href="ftodtf.html#module-ftodtf.cli">ftodtf.cli (module)</a>
 </li>
-      <li><a href="ftodtf.html#module-ftodtf.input">ftodtf.input (module)</a>
+      <li><a href="ftodtf.html#module-ftodtf.inference">ftodtf.inference (module)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ftodtf.html#module-ftodtf.input">ftodtf.input (module)</a>
+</li>
       <li><a href="ftodtf.html#module-ftodtf.model">ftodtf.model (module)</a>
 </li>
       <li><a href="ftodtf.html#module-ftodtf.settings">ftodtf.settings (module)</a>
 </li>
       <li><a href="ftodtf.html#module-ftodtf.training">ftodtf.training (module)</a>
-</li>
-      <li><a href="ftodtf.html#module-ftodtf.validation">ftodtf.validation (module)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -170,7 +177,7 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="ftodtf.html#ftodtf.model.Model.get_scaffold">get_scaffold() (ftodtf.model.Model method)</a>
+      <li><a href="ftodtf.html#ftodtf.model.TrainingModel.get_scaffold">get_scaffold() (ftodtf.model.TrainingModel method)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -186,19 +193,31 @@
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="ftodtf.html#ftodtf.input.inform_progressbar">inform_progressbar() (in module ftodtf.input)</a>
+      <li><a href="ftodtf.html#ftodtf.settings.FasttextSettings.inference_settings">inference_settings() (ftodtf.settings.FasttextSettings static method)</a>
+</li>
+      <li><a href="ftodtf.html#ftodtf.model.InferenceModel">InferenceModel (class in ftodtf.model)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ftodtf.html#ftodtf.input.inform_progressbar">inform_progressbar() (in module ftodtf.input)</a>
+</li>
       <li><a href="ftodtf.html#ftodtf.input.InputProcessor">InputProcessor (class in ftodtf.input)</a>
 </li>
   </ul></td>
 </tr></table>
 
-<h2 id="M">M</h2>
+<h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="ftodtf.html#ftodtf.model.Model">Model (class in ftodtf.model)</a>
+      <li><a href="ftodtf.html#ftodtf.model.InferenceModel.load">load() (ftodtf.model.InferenceModel method)</a>
+</li>
+  </ul></td>
+</tr></table>
+
+<h2 id="N">N</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ftodtf.html#ftodtf.model.ngrams_to_vectors">ngrams_to_vectors() (in module ftodtf.model)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -216,11 +235,11 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="ftodtf.html#ftodtf.validation.print_similarity_check">print_similarity_check() (in module ftodtf.validation)</a>
+      <li><a href="ftodtf.html#ftodtf.inference.print_similarity">print_similarity() (in module ftodtf.inference)</a>
 </li>
       <li><a href="ftodtf.html#ftodtf.training.PrintLossHook">PrintLossHook (class in ftodtf.training)</a>
 </li>
-      <li><a href="ftodtf.html#ftodtf.validation.PrintValidationHook">PrintValidationHook (class in ftodtf.validation)</a>
+      <li><a href="ftodtf.html#ftodtf.inference.PrintSimilarityHook">PrintSimilarityHook (class in ftodtf.inference)</a>
 </li>
       <li><a href="ftodtf.html#ftodtf.settings.FasttextSettings.ps_list">ps_list (ftodtf.settings.FasttextSettings attribute)</a>
 </li>
@@ -249,6 +268,8 @@
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="ftodtf.html#ftodtf.settings.FasttextSettings.training_settings">training_settings() (ftodtf.settings.FasttextSettings static method)</a>
+</li>
+      <li><a href="ftodtf.html#ftodtf.model.TrainingModel">TrainingModel (class in ftodtf.model)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -284,10 +305,12 @@
 <h2 id="W">W</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="ftodtf.html#ftodtf.settings.FasttextSettings.workers_list">workers_list (ftodtf.settings.FasttextSettings attribute)</a>
+      <li><a href="ftodtf.html#ftodtf.input.words_to_ngramhashes">words_to_ngramhashes() (in module ftodtf.input)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="ftodtf.html#ftodtf.settings.FasttextSettings.workers_list">workers_list (ftodtf.settings.FasttextSettings attribute)</a>
+</li>
       <li><a href="ftodtf.html#ftodtf.input.write_batches_to_file">write_batches_to_file() (in module ftodtf.input)</a>
 </li>
   </ul></td>

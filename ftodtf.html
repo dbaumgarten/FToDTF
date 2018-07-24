@@ -96,6 +96,82 @@ finishes only when the function “write_batches_to_file” ends.</p>
 </dd></dl>
 
 </div>
+<div class="section" id="module-ftodtf.inference">
+<span id="ftodtf-inference-module"></span><h2>ftodtf.inference module<a class="headerlink" href="#module-ftodtf.inference" title="Permalink to this headline">¶</a></h2>
+<p>This module contains functions to use trained word-embeddings to do usefull things
+Currently the only implemented thing is to compute the similarities between words.</p>
+<dl class="class">
+<dt id="ftodtf.inference.PrintSimilarityHook">
+<em class="property">class </em><code class="descclassname">ftodtf.inference.</code><code class="descname">PrintSimilarityHook</code><span class="sig-paren">(</span><em>every_n_steps</em>, <em>similarityop</em>, <em>words</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.inference.PrintSimilarityHook" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tensorflow.python.training.basic_session_run_hooks.StepCounterHook</span></code></p>
+<p>Implements a Hook that computes and printes the similarity between given words every x-steps.
+To be used with tf.train.MonitoredTrainingSession</p>
+<dl class="method">
+<dt id="ftodtf.inference.PrintSimilarityHook.after_run">
+<code class="descname">after_run</code><span class="sig-paren">(</span><em>run_context</em>, <em>run_values</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.inference.PrintSimilarityHook.after_run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called after each call to run().</p>
+<p>The <cite>run_values</cite> argument contains results of requested ops/tensors by
+<cite>before_run()</cite>.</p>
+<p>The <cite>run_context</cite> argument is the same one send to <cite>before_run</cite> call.
+<cite>run_context.request_stop()</cite> can be called to stop the iteration.</p>
+<p>If <cite>session.run()</cite> raises any exceptions then <cite>after_run()</cite> is not called.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>run_context: A <cite>SessionRunContext</cite> object.
+run_values: A SessionRunValues object.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="ftodtf.inference.PrintSimilarityHook.before_run">
+<code class="descname">before_run</code><span class="sig-paren">(</span><em>run_context</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.inference.PrintSimilarityHook.before_run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called before each call to run().</p>
+<p>You can return from this call a <cite>SessionRunArgs</cite> object indicating ops or
+tensors to add to the upcoming <cite>run()</cite> call.  These ops/tensors will be run
+together with the ops/tensors originally passed to the original run() call.
+The run args you return can also contain feeds to be added to the run()
+call.</p>
+<p>The <cite>run_context</cite> argument is a <cite>SessionRunContext</cite> that provides
+information about the upcoming <cite>run()</cite> call: the originally requested
+op/tensors, the TensorFlow Session.</p>
+<p>At this point graph is finalized and you can not add ops.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>run_context: A <cite>SessionRunContext</cite> object.</dd>
+<dt>Returns:</dt>
+<dd>None or a <cite>SessionRunArgs</cite> object.</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="ftodtf.inference.compute_similarities">
+<code class="descclassname">ftodtf.inference.</code><code class="descname">compute_similarities</code><span class="sig-paren">(</span><em>words</em>, <em>settings</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.inference.compute_similarities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use trained embeddigs to compute the similarity between given input-words</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>words</strong> (<em>list</em><em>(</em><em>str</em><em>)</em>) – A list of words to compare to each other</li>
+<li><strong>settings</strong> (<em>ftodtf.settings.FastTextSettings</em>) – The settings for the fasttext-model</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="ftodtf.inference.print_similarity">
+<code class="descclassname">ftodtf.inference.</code><code class="descname">print_similarity</code><span class="sig-paren">(</span><em>similarity</em>, <em>words</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.inference.print_similarity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Print similarity between given words
+:param similarity: A matrix of format len(words)xlen(words) containing the similarity between words
+:param list(str) words: Words to print the similarity for</p>
+</dd></dl>
+
+</div>
 <div class="section" id="module-ftodtf.input">
 <span id="ftodtf-input-module"></span><h2>ftodtf.input module<a class="headerlink" href="#module-ftodtf.input" title="Permalink to this headline">¶</a></h2>
 <p>This module handles all the input-relatet tasks like loading, pre-processing
@@ -280,6 +356,16 @@ unarchive functions.</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="ftodtf.input.words_to_ngramhashes">
+<code class="descclassname">ftodtf.input.</code><code class="descname">words_to_ngramhashes</code><span class="sig-paren">(</span><em>words</em>, <em>num_buckets</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.input.words_to_ngramhashes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a list of words into a list of padded lists of ngrams-hashes.
+The resulting matrix can then be used to compute the word-verctors for the original words
+:param list(str) words: The words to convert
+:param int num_buckets: The number of hash-buckets to use when hashing the ngrams
+:returns: list(list(int))</p>
+</dd></dl>
+
+<dl class="function">
 <dt id="ftodtf.input.write_batches_to_file">
 <code class="descclassname">ftodtf.input.</code><code class="descname">write_batches_to_file</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.input.write_batches_to_file" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -289,10 +375,45 @@ unarchive functions.</p>
 <span id="ftodtf-model-module"></span><h2>ftodtf.model module<a class="headerlink" href="#module-ftodtf.model" title="Permalink to this headline">¶</a></h2>
 <p>This module handles the building of the tf execution graph</p>
 <dl class="class">
-<dt id="ftodtf.model.Model">
-<em class="property">class </em><code class="descclassname">ftodtf.model.</code><code class="descname">Model</code><span class="sig-paren">(</span><em>settings</em>, <em>cluster=None</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.model.Model" title="Permalink to this definition">¶</a></dt>
+<dt id="ftodtf.model.InferenceModel">
+<em class="property">class </em><code class="descclassname">ftodtf.model.</code><code class="descname">InferenceModel</code><span class="sig-paren">(</span><em>settings</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.model.InferenceModel" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Builds and represents the tensorflow computation graph. Exports all important operations via fields</p>
+<p>Builds and represents the tensorflow computation graph for using the trained embeddings. Exports all important operations via fields.
+An existing checkpoint must be loaded via load() before this model can be used to compute anything.</p>
+<p>Constuctor for Model</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>settings</strong> (<a class="reference internal" href="#ftodtf.settings.FasttextSettings" title="ftodtf.settings.FasttextSettings"><em>ftodtf.settings.FasttextSettings</em></a>) – An object encapsulating all the settings for the fasttext-model</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="ftodtf.model.InferenceModel.load">
+<code class="descname">load</code><span class="sig-paren">(</span><em>logdir</em>, <em>session</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.model.InferenceModel.load" title="Permalink to this definition">¶</a></dt>
+<dd><p>Loades pre-trained embeddings from the filesystem</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>logdir</strong> (<em>str</em>) – The path of the folder where the checkpoints created by the training were saved</li>
+<li><strong>session</strong> (<em>tf.Session</em>) – The session to restore the variables into</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="ftodtf.model.TrainingModel">
+<em class="property">class </em><code class="descclassname">ftodtf.model.</code><code class="descname">TrainingModel</code><span class="sig-paren">(</span><em>settings</em>, <em>cluster=None</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.model.TrainingModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Builds and represents the tensorflow computation graph for the training of the embeddings. Exports all important operations via fields</p>
 <p>Constuctor for Model</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -307,8 +428,8 @@ unarchive functions.</p>
 </tbody>
 </table>
 <dl class="method">
-<dt id="ftodtf.model.Model.get_scaffold">
-<code class="descname">get_scaffold</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.model.Model.get_scaffold" title="Permalink to this definition">¶</a></dt>
+<dt id="ftodtf.model.TrainingModel.get_scaffold">
+<code class="descname">get_scaffold</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.model.TrainingModel.get_scaffold" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a tf.train.Scaffold object describing this graph</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
@@ -320,6 +441,53 @@ unarchive functions.</p>
 </table>
 </dd></dl>
 
+</dd></dl>
+
+<dl class="function">
+<dt id="ftodtf.model.compute_word_similarities">
+<code class="descclassname">ftodtf.model.</code><code class="descname">compute_word_similarities</code><span class="sig-paren">(</span><em>ngramhashmatrix</em>, <em>embeddings</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.model.compute_word_similarities" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a tensorflow-operation that computes the similarities between all input-words using the given embeddings</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>ngramhashmatrix</strong> (<em>tf.Tensor</em>) – A list of lists of ngram-hashes, each list represents the ngrams for one word. (In principle a trainings-batch without labels)</li>
+<li><strong>embeddings</strong> (<em>tf.Tensor</em>) – The embeddings to use for converting words to vectors. (Can be a list of tensors)</li>
+<li><strong>num_buckets</strong> (<em>int</em>) – The number of hash-buckets used when hashing ngrams</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="ftodtf.model.create_embedding_weights">
+<code class="descclassname">ftodtf.model.</code><code class="descname">create_embedding_weights</code><span class="sig-paren">(</span><em>settings</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.model.create_embedding_weights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a (partitioned) tensorflow variable for the word-embeddings
+Exists as seperate function to minimize code-duplication between training and inference-models</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ftodtf.model.ngrams_to_vectors">
+<code class="descclassname">ftodtf.model.</code><code class="descname">ngrams_to_vectors</code><span class="sig-paren">(</span><em>ngrams</em>, <em>embeddings</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.model.ngrams_to_vectors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a tensorflow operation converting a batch consisting of lists of ngrams for a word to a list of vectors. One vector for each word</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>ngrams</strong> – A batch of lists of ngrams</li>
+<li><strong>embeddings</strong> – The embeddings to use as tensorflow variable. Can also be a list of variables.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">a batch of vectors</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
@@ -352,7 +520,7 @@ unarchive functions.</p>
 <tr class="field-odd field"><th class="field-name">Variables:</th><td class="field-body"><ul class="first last simple">
 <li><strong>corpus_path</strong> (<em>str</em>) – Path to the file containing text for training the model.</li>
 <li><strong>batches_file</strong> (<em>str</em>) – The Filename for the file containing the training-batches. The file is written by the preprocess command and read by the train command.</li>
-<li><strong>log_dir</strong> (<em>str</em>) – Directory to write the generated files (e.g. the computed word-vectors) to.</li>
+<li><strong>log_dir</strong> (<em>str</em>) – Directory to write the generated files (e.g. the computed word-vectors) to and read/write checkoints from.</li>
 <li><strong>steps</strong> (<em>int</em>) – How many training steps to perform.</li>
 <li><strong>vocabulary_size</strong> (<em>int</em>) – How many words the vocabulary will have. Only the vocabulary_size most frequent words will be processed.</li>
 <li><strong>batch_size</strong> (<em>int</em>) – How many trainings-samples to process per batch.</li>
@@ -395,6 +563,13 @@ unarchive functions.</p>
 <dt id="ftodtf.settings.FasttextSettings.distribution_settings">
 <em class="property">static </em><code class="descname">distribution_settings</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.settings.FasttextSettings.distribution_settings" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the names of the settings that are used for configuren the tensoflow-cluster</p>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="ftodtf.settings.FasttextSettings.inference_settings">
+<em class="property">static </em><code class="descname">inference_settings</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.settings.FasttextSettings.inference_settings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the names of the settings that are used for the infer
+command</p>
 </dd></dl>
 
 <dl class="staticmethod">
@@ -600,62 +775,6 @@ op/tensors, the TensorFlow Session.</p>
 </tr>
 </tbody>
 </table>
-</dd></dl>
-
-</div>
-<div class="section" id="module-ftodtf.validation">
-<span id="ftodtf-validation-module"></span><h2>ftodtf.validation module<a class="headerlink" href="#module-ftodtf.validation" title="Permalink to this headline">¶</a></h2>
-<p>Handles all evaluation relatet tasks, like printing the nearest neighbors of a word or visualizing the generated vectors</p>
-<dl class="class">
-<dt id="ftodtf.validation.PrintValidationHook">
-<em class="property">class </em><code class="descclassname">ftodtf.validation.</code><code class="descname">PrintValidationHook</code><span class="sig-paren">(</span><em>every_n_steps</em>, <em>validationop</em>, <em>words</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.validation.PrintValidationHook" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">tensorflow.python.training.basic_session_run_hooks.StepCounterHook</span></code></p>
-<p>Implements a Hook that prints the resuls of the evaluation every x steps</p>
-<dl class="method">
-<dt id="ftodtf.validation.PrintValidationHook.after_run">
-<code class="descname">after_run</code><span class="sig-paren">(</span><em>run_context</em>, <em>run_values</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.validation.PrintValidationHook.after_run" title="Permalink to this definition">¶</a></dt>
-<dd><p>Called after each call to run().</p>
-<p>The <cite>run_values</cite> argument contains results of requested ops/tensors by
-<cite>before_run()</cite>.</p>
-<p>The <cite>run_context</cite> argument is the same one send to <cite>before_run</cite> call.
-<cite>run_context.request_stop()</cite> can be called to stop the iteration.</p>
-<p>If <cite>session.run()</cite> raises any exceptions then <cite>after_run()</cite> is not called.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>run_context: A <cite>SessionRunContext</cite> object.
-run_values: A SessionRunValues object.</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="ftodtf.validation.PrintValidationHook.before_run">
-<code class="descname">before_run</code><span class="sig-paren">(</span><em>run_context</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.validation.PrintValidationHook.before_run" title="Permalink to this definition">¶</a></dt>
-<dd><p>Called before each call to run().</p>
-<p>You can return from this call a <cite>SessionRunArgs</cite> object indicating ops or
-tensors to add to the upcoming <cite>run()</cite> call.  These ops/tensors will be run
-together with the ops/tensors originally passed to the original run() call.
-The run args you return can also contain feeds to be added to the run()
-call.</p>
-<p>The <cite>run_context</cite> argument is a <cite>SessionRunContext</cite> that provides
-information about the upcoming <cite>run()</cite> call: the originally requested
-op/tensors, the TensorFlow Session.</p>
-<p>At this point graph is finalized and you can not add ops.</p>
-<dl class="docutils">
-<dt>Args:</dt>
-<dd>run_context: A <cite>SessionRunContext</cite> object.</dd>
-<dt>Returns:</dt>
-<dd>None or a <cite>SessionRunArgs</cite> object.</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="function">
-<dt id="ftodtf.validation.print_similarity_check">
-<code class="descclassname">ftodtf.validation.</code><code class="descname">print_similarity_check</code><span class="sig-paren">(</span><em>similarity</em>, <em>words</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.validation.print_similarity_check" title="Permalink to this definition">¶</a></dt>
-<dd><p>Print similarity between given words
-:param similarity: A matrix of format len(words)xlen(words) containing the similarity between words
-:param list(str) words: Words to print the similarity for</p>
 </dd></dl>
 
 </div>
