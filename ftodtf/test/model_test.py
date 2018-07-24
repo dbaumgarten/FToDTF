@@ -13,7 +13,7 @@ def test_model():
     seti.validation_words = "one,two,king,kingdom"
     seti.num_sampled = 16
     seti.num_buckets = 10000
-    m = model.Model(seti)
+    m = model.TrainingModel(seti)
     assert m
     assert m.loss is not None
     assert m.merged is not None

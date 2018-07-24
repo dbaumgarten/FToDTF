@@ -26,7 +26,7 @@ import os
 
 import tensorflow as tf
 import ftodtf.model as model
-import ftodtf.validation
+import ftodtf.inference
 
 # pylint: disable=E0611
 from tensorflow.python.client import timeline
@@ -92,7 +92,7 @@ def train(settings):
         return
 
     # Get the computation-graph and the associated operations
-    m = model.Model(settings, cluster)
+    m = model.TrainingModel(settings, cluster)
 
     hooks = [tf.train.StopAtStepHook(
         last_step=settings.steps)]
@@ -100,7 +100,7 @@ def train(settings):
     chief_hooks = [PrintLossHook(2000, m.loss, m.step_nr)]
 
     if settings.validation_words:
-        chief_hooks.append(ftodtf.validation.PrintValidationHook(
+        chief_hooks.append(ftodtf.inference.PrintSimilarityHook(
             10000, m.validation, settings.validation_words_list))
 
     with m.graph.as_default():

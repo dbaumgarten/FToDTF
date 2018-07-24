@@ -172,6 +172,24 @@ def write_batches_to_file(batchgenerator, filename, num_batch_files):
         writer.close()
 
 
+def words_to_ngramhashes(words, num_buckets):
+    """ Converts a list of words into a list of padded lists of ngrams-hashes.
+    The resulting matrix can then be used to compute the word-verctors for the original words
+    :param list(str) words: The words to convert
+    :param int num_buckets: The number of hash-buckets to use when hashing the ngrams
+    :returns: list(list(int))
+    """
+
+    ngs = [generate_ngram_per_word(x) for x in words]
+    maxlen = 0
+    for ng in ngs:
+        maxlen = max(maxlen, len(ng))
+    for i, _ in enumerate(ngs):
+        ngs[i] = hash_string_list(ngs[i], num_buckets-1, 1)
+        ngs[i] = pad_to_length(ngs[i], maxlen, pad=0)
+    return ngs
+
+
 class InputProcessor:
     """Handles the creation of training-examble-batches from the raw training-text"""
 
