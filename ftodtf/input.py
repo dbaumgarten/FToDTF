@@ -142,9 +142,12 @@ def write_batches_to_file(batchgenerator, filename, num_batch_files):
     """
 
     writers = []
-    for k in range(0, num_batch_files):
-        writers.append(tf.python_io.TFRecordWriter(
-            filename+'_'+str(k)+'.tfrecord'))
+    if num_batch_files == 1:
+        writers.append(tf.python_io.TFRecordWriter(filename))
+    else:
+        for k in range(0, num_batch_files):
+            writers.append(tf.python_io.TFRecordWriter(
+                'batches_'+str(k)+'.tfrecord'))
 
     writer_index = 0
     batch_counter = 0
@@ -170,6 +173,9 @@ def write_batches_to_file(batchgenerator, filename, num_batch_files):
     for writer in writers:
         writer.flush()
         writer.close()
+
+
+
 
 
 def words_to_ngramhashes(words, num_buckets):
