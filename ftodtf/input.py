@@ -3,13 +3,9 @@ and batching"""
 
 import os
 import re
-import zipfile
-import tarfile
 import random
 import collections
 import multiprocessing as mp
-from tempfile import gettempdir
-
 import fnvhash
 import numpy as np
 import tensorflow as tf
@@ -24,63 +20,6 @@ except LookupError:
 
 # function names will be put there to show the progress of the preprocessing
 QUEUE = mp.Manager().Queue()
-
-
-def check_valid_path(file_path):
-    """
-    Checks if the given path exists.
-
-    :param str path: The path to a file.
-    :raises: FileNotFoundError
-    """
-    if os.path.isfile(file_path) is False:
-        raise FileNotFoundError("The specified corpus was not found!")
-
-
-def unarchive(file_path):
-    """
-    Checks if the given file is archived as tar or zips and calls the appropriate
-    unarchive functions.
-
-    :param str file_path: The path to a file.
-    :returns: The path to the file after unarchiving.
-    """
-    if tarfile.is_tarfile(file_path):
-        print("Unpacking tar ...")
-        return untar_file(file_path)
-    elif zipfile.is_zipfile(file_path):
-        print("Unpacking zip ...")
-        return unzip_file(file_path)
-    return file_path
-
-
-def unzip_file(file_path):
-    """
-    Extracts zip archive.
-
-    :param str file_path: The path provided to the zip archive.
-    :returns: The path to the extracted file.
-    """
-    zip_ref = zipfile.ZipFile(file_path, 'r')
-    zip_ref.extract(zip_ref.namelist()[0], path=gettempdir())
-    file_name = os.path.join(gettempdir(), zip_ref.namelist()[0])
-    zip_ref.close()
-    return file_name
-
-
-def untar_file(file_path):
-    """
-    Extracts tar archive.
-
-    :param str file_path: The path provided to the
-    :returns: The path to the extracted file.
-    """
-    tar_ref = tarfile.open(file_path)
-    tar_ref.extractall(path=gettempdir())
-    file_name = os.path.join(gettempdir(), tar_ref.getnames()[0])
-    print(file_name)
-    tar_ref.close()
-    return file_name
 
 
 def generate_ngram_per_word(word, ngram_window=2):
@@ -175,9 +114,6 @@ def write_batches_to_file(batchgenerator, filename, num_batch_files):
         writer.close()
 
 
-
-
-
 def words_to_ngramhashes(words, num_buckets):
     """ Converts a list of words into a list of padded lists of ngrams-hashes.
     The resulting matrix can then be used to compute the word-verctors for the original words
@@ -220,7 +156,7 @@ class InputProcessor:
         """
         # TODO: Process a folder files which where separated by user
         self._process_text()
-        self.wordcount = collections.Counter(self._words_in_sentence())
+        self.wordcount = collections.Counter(self._words_in_corpus())
 
         # number of all words in the corpus
         total_sum = sum(self.wordcount.values())
@@ -287,9 +223,9 @@ class InputProcessor:
             sentence_tokens[j] = clean_sentence.lower()
         return sentence_tokens
 
-    def _words_in_sentence(self):
+    def _words_in_corpus(self):
         """
-        Returns a generator over all words in the sentence written lowercase and
+        Returns a generator over all words in the corpus written lowercase and
         removes punctuation.
         """
         for sentence in self.sentences:
