@@ -4,6 +4,7 @@ from the library"""
 import sys
 import argparse
 from multiprocessing import Process
+from multiprocessing.queues import Empty
 from tqdm import tqdm
 import ftodtf.model
 import ftodtf.training
@@ -93,7 +94,7 @@ def show_prog(q):
                 proggress_bar.n = 100
                 proggress_bar.close()
                 return 0
-        except:
+        except (TimeoutError, Empty):
             if n <= 0:
                 j *= 10
                 n = j

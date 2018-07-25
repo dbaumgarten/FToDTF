@@ -132,6 +132,27 @@ def words_to_ngramhashes(words, num_buckets):
     return ngs
 
 
+def find_and_clean_sentences(corpus):
+    """
+    Uses NLTK to parse the corpus and find the sentences.
+    :param str corpus: The corpus where the sentences should be found.
+    :return: A list with sentences.
+    """
+    sentence_tokens = sent_tokenize(corpus, language='german')
+    for j, sentence in enumerate(sentence_tokens):
+        clean_sentence = ""
+        for word in word_tokenize(sentence):
+            clean_word = "".join(letter for letter in word
+                                 if letter.isalpha())
+            if not clean_word.isspace():
+                clean_sentence = " ".join(filter(None, [clean_sentence,
+                                                        clean_word]))
+
+        clean_sentence = re.sub("\s+", " ", clean_sentence)
+        sentence_tokens[j] = clean_sentence.lower()
+    return sentence_tokens
+
+
 class InputProcessor:
     """Handles the creation of training-examble-batches from the raw training-text"""
 
@@ -187,7 +208,7 @@ class InputProcessor:
         with open(self.settings.corpus_path) as f:
             corpus = f.read()
             if os.path.getsize(self.settings.corpus_path) / (1024 * 1024) < 100:
-                self.sentences = self._find_and_clean_sentences(corpus)
+                self.sentences = find_and_clean_sentences(corpus)
             else:
                 size_per_cpu = len(corpus) // mp.cpu_count()
                 pool = mp.Pool(processes=mp.cpu_count() - 2)
@@ -197,31 +218,11 @@ class InputProcessor:
                     corpus_chunks.append(
                         corpus[i * size_per_cpu:(i + 1) * size_per_cpu])
                 result = pool.map(
-                    self._find_and_clean_sentences, corpus_chunks)
+                    find_and_clean_sentences, corpus_chunks)
 
                 for sentence_bundle in result:
                     for sentence in sentence_bundle:
                         self.sentences.append(sentence)
-
-    def _find_and_clean_sentences(self, corpus):
-        """
-        Uses NLTK to parse the corpus and find the sentences.
-        :param str corpus: The corpus where the sentences should be found.
-        :return: A list with sentences.
-        """
-        sentence_tokens = sent_tokenize(corpus, language='german')
-        for j, sentence in enumerate(sentence_tokens):
-            clean_sentence = ""
-            for word in word_tokenize(sentence):
-                clean_word = "".join(letter for letter in word
-                                     if letter.isalpha())
-                if not clean_word.isspace():
-                    clean_sentence = " ".join(filter(None, [clean_sentence,
-                                                            clean_word]))
-
-            clean_sentence = re.sub("\s+", " ", clean_sentence)
-            sentence_tokens[j] = clean_sentence.lower()
-        return sentence_tokens
 
     def _words_in_corpus(self):
         """

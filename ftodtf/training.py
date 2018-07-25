@@ -24,15 +24,14 @@
 """ This module handles the training of the word-vectors"""
 import os
 import signal
-import sys
 import _thread
-
-import tensorflow as tf
-import ftodtf.model as model
-import ftodtf.inference
 
 # pylint: disable=E0611
 from tensorflow.python.client import timeline
+import tensorflow as tf
+
+import ftodtf.model as model
+import ftodtf.inference
 
 
 def _tfserver_from_settings(settings):
