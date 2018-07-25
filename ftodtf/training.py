@@ -23,6 +23,9 @@
 # ==============================================================================
 """ This module handles the training of the word-vectors"""
 import os
+import signal
+import sys
+import _thread
 
 import tensorflow as tf
 import ftodtf.model as model
@@ -88,7 +91,9 @@ def train(settings):
     server, cluster = _tfserver_from_settings(settings)
 
     if settings.job == "ps":
-        server.join()
+        _thread.start_new_thread(server.join, tuple())
+        signal.sigwait([signal.SIGINT, signal.SIGKILL])
+        print("Terminating...")
         return
 
     # Get the computation-graph and the associated operations
