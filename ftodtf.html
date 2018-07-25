@@ -221,22 +221,6 @@ create a mapping word-&gt;int</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="ftodtf.input.check_valid_path">
-<code class="descclassname">ftodtf.input.</code><code class="descname">check_valid_path</code><span class="sig-paren">(</span><em>file_path</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.input.check_valid_path" title="Permalink to this definition">¶</a></dt>
-<dd><p>Checks if the given path exists.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>path</strong> (<em>str</em>) – The path to a file.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Raises:</th><td class="field-body">FileNotFoundError</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
 <dt id="ftodtf.input.generate_ngram_per_word">
 <code class="descclassname">ftodtf.input.</code><code class="descname">generate_ngram_per_word</code><span class="sig-paren">(</span><em>word</em>, <em>ngram_window=2</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.input.generate_ngram_per_word" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generates ngram strings of the specified size for a given word.
@@ -301,55 +285,6 @@ progress in the progressbar
 <li><strong>pad</strong> (<em>object</em>) – The element to add to the list until the desired length is reached</li>
 </ul>
 </td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="ftodtf.input.unarchive">
-<code class="descclassname">ftodtf.input.</code><code class="descname">unarchive</code><span class="sig-paren">(</span><em>file_path</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.input.unarchive" title="Permalink to this definition">¶</a></dt>
-<dd><p>Checks if the given file is archived as tar or zips and calls the appropriate
-unarchive functions.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>file_path</strong> (<em>str</em>) – The path to a file.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The path to the file after unarchiving.</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="ftodtf.input.untar_file">
-<code class="descclassname">ftodtf.input.</code><code class="descname">untar_file</code><span class="sig-paren">(</span><em>file_path</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.input.untar_file" title="Permalink to this definition">¶</a></dt>
-<dd><p>Extracts tar archive.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>file_path</strong> (<em>str</em>) – The path provided to the</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The path to the extracted file.</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="ftodtf.input.unzip_file">
-<code class="descclassname">ftodtf.input.</code><code class="descname">unzip_file</code><span class="sig-paren">(</span><em>file_path</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.input.unzip_file" title="Permalink to this definition">¶</a></dt>
-<dd><p>Extracts zip archive.</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>file_path</strong> (<em>str</em>) – The path provided to the zip archive.</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">The path to the extracted file.</td>
 </tr>
 </tbody>
 </table>
