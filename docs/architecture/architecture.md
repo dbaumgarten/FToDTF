@@ -49,11 +49,12 @@ einfache Häufigkeit ein weiterer Eliminierungprozess durchgeführt.
 Nun kommt die Drop-Probability zum Einsatz. Dieser
 Wert entscheidet darüber, ob das betrachtende Kontextwort bleibt oder nicht. Über die
 Generatoren _lookup_label, _ngrammize, _hash_ngrams, erfolgen die Schritte der n-gram-Zerlegung und
-des n-gram-Hashings.
+des n-gram-Hashings. Die fertigen Batches bestehen dann jeweils aus n Einträgen und jeder Eintrag besteht aus einer Liste an ngram-hashes des target-wortes und der ID des context-wortes.
 
 4. Im letzten Teil des Preprocessings schreibt die Funktion write_batches_to_file()
 die generierten Trainingstupel-Batches in ein für Tensorflow bestimmtes Format. Die
-Größe der Batches kann wiederum über den Parameter batches_size angegeben werden. 
+Größe der Batches kann wiederum über den Parameter batches_size angegeben werden.
+Dabei können die generierten Batches auch auf mehrere Dateien verteilt werden, so dass im Falle eines verteilten Trainings jeder Worker einen individuellen Satz an Trainings-Batches bekommen kann.
 
 
 
@@ -61,18 +62,19 @@ Größe der Batches kann wiederum über den Parameter batches_size angegeben wer
 
 Für die Verteilung der Berechnung der Word-Vektoren auf mehrere Rechner, wird der in TensorFlow vorgesehene Mechanismus genutzt. Dabei werden die zur Verfügung stehenden Server aufgeteilt in Parameter-Server und Worker.  
 - Die Parameter-Server speichern die Variablen des TensorFlow-Graphen. Braucht ein Worker für die aktuelle Berechnung den Wert einer Variable so wird dieser vom betreffenden Parameter-Server an den Worker übermittelt. Da bei einer sehr großen Menge von Variablen Speicher oder Netzwer-IO eines einzelnen Parameter-Servers eventuell nicht mehr ausreichen ist es auch möglich die Variablen unter mehreren Parameter Serven aufzuteilen. Für große Trainingsdatensätze und hohe Embedding-Dimensionen dürfte das auch in unserem Fall nötig sein. 
-- Die Worker führen die eigentlichen Berechnungen durch, in unserem Fall also die Berechnung von Word-Vektoren aus Trainingsdaten. Jeder Worker operiert dabei auf einem Teil der Trainingsdaten. Bestimmte Daten, wie das Mapping Wort->int oder die Worthäufigkeiten in den Trainingsdaten müssen allerdings auf allen Workern vorliegen. Dies kann entweder über die seperate Berechnung auf jedem Worker oder die einmalige Berechnung und anschließende Verteilung über die Parameter-Server erfolgen. Welche der beiden Varianten performanter ist wird sich zeigen.  
+- Die Worker führen die eigentlichen Berechnungen durch, in unserem Fall also die Berechnung von Word-Vektoren aus Trainingsdaten. Jeder Worker operiert dabei auf einem Teil der Trainingsdaten. Die Trainingsdaten wurden vorher in einem seperaten Schritt aus dem rohen Eingabetext erzeugt.
 
 Die benötigten Daten-Übertragungen zwischen Workern und Parameter-Servern werden von TensorFlow automatisch in den Berechnungs-Graphen eingefügt. Von unserer Seite ist dafür keine zusätzlicher Arbeit nötig. 
 
 Der Grobe Ablauf des Trainings sieht folgendermaßen aus:  
 
-0. Variablen werden initialisiert. Die beteiligten Server bauen Verbindungen zueinander auf und warten bis alle Server bereit sind.
-1. Jeder Worker generiert aus seinem Teil der Trainingsdaten seinen nächsten Trainings-Batch.
-2. Jeder Worker holt sich vom jeweils zuständigen Parameter-Server die aktuellen Vektoren für die n-gramme der Ziel-Worte, sowie die Vektoren der passenden Kontext-Worte und die Vektoren  von einer Menge zufälliger nicht-passender Kontext-Worte
-3. Jeder Worker führt das NCE-Sampling für seine aktuelle Batch durch und berechnet die vorzunehmenden Änderungen an den Vektoren.
-4. Jeder Worker übermittelt die berechneten Änderungen an den Vektoren asynchron an die Parameter-Server. (Die Asynchronität der Updates könnte zu suboptimalen Verhalten führen, laut der TensorFlow-Dokumentation kommt es aber zu keinenen praktisch-relevanten Problemen)
-5. Wenn das Training nicht aufgrund von der vorgegebenen Schrittzahl oder Fehlerquote beendet wurde, gehe zu Schritt 1.
+0. Der rohe Eingabetext wird vorverarbeitet und in Trainingsdaten-Batches konvertiert. Die erzeugten Dateien mit den Trainingsdaten-Batches werden auf die einzelnen Worker verteilt.
+1. Variablen werden initialisiert. Die beteiligten Server bauen Verbindungen zueinander auf und warten bis alle Server bereit sind.
+2. Jeder Worker ließt seine nächste Trainings-Batch aus seiner Traningsdaten-Batch-Datei.
+3. Jeder Worker holt sich vom jeweils zuständigen Parameter-Server die aktuellen Vektoren für die n-gramme der Ziel-Worte, sowie die Vektoren der passenden Kontext-Worte und die Vektoren  von einer Menge zufälliger nicht-passender Kontext-Worte
+4. Jeder Worker führt das NCE-Sampling für seine aktuelle Batch durch und berechnet die vorzunehmenden Änderungen an den Vektoren.
+5. Jeder Worker übermittelt die berechneten Änderungen an den Vektoren asynchron an die Parameter-Server. (Die Asynchronität der Updates könnte zu suboptimalen Verhalten führen, laut der TensorFlow-Dokumentation kommt es aber zu keinenen praktisch-relevanten Problemen)
+6. Solange nicht die geforderte Anzahl an Trainingsschritten absolviert wurde, gehe zu Schritt 2.
 
 
 
@@ -91,14 +93,15 @@ Für das Deployment auf dem Galaxy-Cluster soll docker-swarm benutzt werden, wod
 
 Die Vorverarbeitung der Trainingsdaten geschieht mittels NLTK. Dabei werden beispielsweise Satzzeichen entfernt, Worte werden in ein einheitliches Format überführt und der Trainingskorpus in Inhaltlich zusammenhängende Blöcke geteilt.
 Das Ergebnis der Vorverarbeitung ist eine einzelne große Text-Datei. Jede Zeile repräsentiert einen inhaltlich zusammenhängenden Block (z.B. Artikel, Absätze, Sätze o.ä.).
-Eventuell wird die Berechnung einiger für den fasttext-Algorithmus nötigen Werte (z.B. Worfrequenzen) bereits in diesem Schritt ermittelt, so das dies später nicht mehr getan werden muss. Das subsampling wird nach den Empfehlungen (Formel sowie Treshold) von Mikolov u.a. [4] vorgenommen.
-Das eigentliche Programm ließt diese Datei ein und generiert daraus on-the-fly Trainingsbatches aus Targetword-Contextword-Paaren für das neuronale Netzwerk.
+Das subsampling wird nach den Empfehlungen (Formel sowie Treshold) von Mikolov u.a. [4] vorgenommen.
+Die Wortpaare werden anschließend in paare aus Targetword-ngram-hashes und ContextwordId umgewandelt und diese dann in einer oder mereren Dateien gespeichert.
+Das eigentliche Trainingsprogramm ließt dann diese generierte Datei ein und benutzt die darin enthaltenen Trainingsdaten um die Word-Embeddings zu trainieren.
 
 ## Details zur Verteilung
 
 Im Folgenden wird der Ablauf des verteilten Algorithmus beschrieben.
-Wir speichern die Trainingsdaten an einem Ort, die von jeder Instanz erreichbar ist. 
-Auf jeden beteiligten Node wird mittels Dockerswarm eine Instanz unseres Programms gestartet.
+Wir speichern die Trainingsdaten an einem Ort, die von der jeweiligen Instanz erreichbar ist. (Im einfachsten Fall auf dem lokalen Dateisystem des Rechners)
+Auf jedem beteiligten Node wird mittels Dockerswarm eine Instanz unseres Programms gestartet.
 Den Instanzen werden mittels Kommandozeilenparameter Informationen übergeben, die vom Programm mittels des
 argparse Moduls verarbeitet werden.
 
@@ -108,23 +111,18 @@ Darunter sind:
 - ob die Instanz ein Parameterserver oder ein Worker ist
 - die Nummer der Instanz unter den Workern/Parameterservern
 - Hyperparameter des Modells
-- Speicherort der Trainingsdaten (auf einem erreichbaren Filesystems)
+- Speicherort der Trainingsdaten (auf einem erreichbaren Filesystem)
 
 Das Programm startet jeweils einen Tensorflowserver auf dem lokalen Rechner.
 Die Parameterserver joinen dem Cluster und warten auf das Ende des Trainings.
 Jeder Worker baut einen eigenen Graph und sendet ihn an seinen lokalen Tensorflowserver.
 Die Worker warten darauf, dass die gemeinsamen Variablen initialisiert werden und alle Worker dem Cluster beigetreten 
 sind. 
-Anschließend berechnet jeder Worker einige Werte über den gesamten Datensatz darunter beispielsweise
-Wortfrequenzen in den Trainingsdaten und ein Mapping Wort zu Zahl. Die Werten müssen über dem gesamten Datensatz berechnet 
-werden, da diese auf jedem Worker identisch sein müssen.
-Zu einem späteren Zeitpunkt, kann dieser Schritt verteilt ausgeführt werden z.B. mittels MapReduce.
 Nun berechnet jeder Worker unabhängig von den anderen Workern für seinen Teil der Trainingsdaten Änderungen an
 den gemeinsamen Gewichten und wendet diese Änderungen an.
 Diese Änderungen werden durch Tensorflow transparent direkt auf den Parameterservern asynchron und ohne
-Locking durchgeführt. Dieser Prozess wird weiter fortgeführt bis die Fehlerrate nicht weiter verbessert wird oder
-eine festgelehnte Menge an Zeit oder Iteration verstrichen ist. Während des gesamten Trainings und am Ende des Trainings
-werden periodisch die Gewichte gespeichert. 
+Locking durchgeführt. Dieser Prozess wird weiter fortgeführt bis eine festgelehnte ANzahl an Iteration absolviert wurde. 
+Während des gesamten Trainings und am Ende des Trainingswerden periodisch die Gewichte in Checkpoints gespeichert. Dadurch kann ein unterbrochenes Training vortgesetzt werden, ohne kommplett von 0 zu beginnen.
 
 Unsere Architektur (Worker,Parameterserver) entspricht im wesentlichen Downpour-SGD. Bei Art der 
 Paralellität handelt es sich hierbei um Datenparalellität. Modellparalellität kommt nicht zum Einsatz.
