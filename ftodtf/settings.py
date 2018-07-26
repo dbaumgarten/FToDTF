@@ -190,7 +190,7 @@ def check_nodelist(noli, allow_empty=False):
     """
     if allow_empty and noli == "":
         return
-    hostportregex = re.compile("^[0-9a-zA-Z.]+:[0-9]+$")
+    hostportregex = re.compile("^[0-9a-zA-Z.\-]+:[0-9]+$")
     noli = noli.split(",")
     for e in noli:
         if not hostportregex.match(e):
