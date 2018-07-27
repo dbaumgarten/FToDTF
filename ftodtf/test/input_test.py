@@ -5,6 +5,7 @@ import os
 
 import ftodtf.input as inp
 from ftodtf.settings import FasttextSettings
+from ftodtf.input import find_and_clean_sentences
 import fnvhash
 
 
@@ -185,3 +186,9 @@ def test_write_batches_to_file():
     inp.write_batches_to_file(batches, SETTINGS.batches_file, 1)
     filesize = os.stat(SETTINGS.batches_file).st_size
     assert filesize > 100
+
+
+def test_find_and_clean_sentences():
+    test_sentence = "Ich bin der este Satz! Und ich bin, der zweite."
+    result_sentence = ["ich bin der este satz", "und ich bin der zweite"]
+    assert find_and_clean_sentences(test_sentence) == result_sentence
