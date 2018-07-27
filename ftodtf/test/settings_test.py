@@ -11,7 +11,7 @@ def test_class_FasttextSettings():
 def test_preprocessing_settings():
     pre_seti = {"corpus_path", "batches_file", "vocabulary_size", "batch_size",
                 "skip_window", "ngram_size", "num_buckets", "rejection_threshold",
-                "profile", "num_batch_files"}
+                "profile", "num_batch_files", "language"}
 
     assert len(pre_seti) == len(
         ftodtf.settings.FasttextSettings.preprocessing_settings())

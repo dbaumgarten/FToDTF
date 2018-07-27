@@ -189,6 +189,11 @@ def test_write_batches_to_file():
 
 
 def test_find_and_clean_sentences():
-    test_sentence = "Ich bin der este Satz! Und ich bin, der zweite."
-    result_sentence = ["ich bin der este satz", "und ich bin der zweite"]
-    assert find_and_clean_sentences(test_sentence) == result_sentence
+    test_sentence_de = "Ich bin der este Satz! Und ich bin, der zweite."
+    test_sentence_en = "I'm the first sentence. Are you the second one?"
+    result_sentence_de = ["ich bin der este satz", "und ich bin der zweite"]
+    result_sentence_en = ["i m the first sentence", "are you the second one"]
+    assert find_and_clean_sentences(test_sentence_de, "german") == result_sentence_de
+    assert find_and_clean_sentences(test_sentence_en, "english") == result_sentence_en
+
+

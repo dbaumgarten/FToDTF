@@ -132,13 +132,13 @@ def words_to_ngramhashes(words, num_buckets):
     return ngs
 
 
-def find_and_clean_sentences(corpus):
+def find_and_clean_sentences(corpus, language):
     """
     Uses NLTK to parse the corpus and find the sentences.
     :param str corpus: The corpus where the sentences should be found.
     :return: A list with sentences.
     """
-    sentence_tokens = sent_tokenize(corpus, language='german')
+    sentence_tokens = sent_tokenize(corpus, language=language)
     for j, sentence in enumerate(sentence_tokens):
         clean_sentence = ""
         for word in word_tokenize(sentence):
@@ -151,6 +151,15 @@ def find_and_clean_sentences(corpus):
         clean_sentence = re.sub("\s+", " ", clean_sentence)
         sentence_tokens[j] = clean_sentence.lower()
     return sentence_tokens
+
+
+def find_and_clean_sentences_helper(args):
+    """
+    Auxiliary function to unwrap the arguments for multiprocessing.
+    :param args: Takes the corpus and specified language of the corpus.
+    :return: The result of the find_and_clean_sentence function.
+    """
+    return find_and_clean_sentences(*args)
 
 
 class InputProcessor:
@@ -208,7 +217,7 @@ class InputProcessor:
         with open(self.settings.corpus_path) as f:
             corpus = f.read()
             if os.path.getsize(self.settings.corpus_path) / (1024 * 1024) < 100:
-                self.sentences = find_and_clean_sentences(corpus)
+                self.sentences = find_and_clean_sentences(corpus, self.settings.language)
             else:
                 size_per_cpu = len(corpus) // mp.cpu_count()
                 pool = mp.Pool(processes=mp.cpu_count() - 2)
@@ -217,9 +226,9 @@ class InputProcessor:
                 for i in range(0, mp.cpu_count()):
                     corpus_chunks.append(
                         corpus[i * size_per_cpu:(i + 1) * size_per_cpu])
-                result = pool.map(
-                    find_and_clean_sentences, corpus_chunks)
 
+                job_args = [(e, self.settings.language) for e in corpus_chunks]
+                result = pool.map(find_and_clean_sentences_helper, job_args)
                 for sentence_bundle in result:
                     for sentence in sentence_bundle:
                         self.sentences.append(sentence)

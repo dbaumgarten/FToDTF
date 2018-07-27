@@ -32,6 +32,7 @@ class FasttextSettings:
     :ivar str ps: A comma seperated list of host:port combinations representing the parameter servers in the distributed setup. If empty a non-distributed setup is assumed.
     :ivar int num_batch_files: Number of batch files which should be created.
     :ivar int index: The of the node itself in the list of --workers (or --ps, depending on --job).
+    :ivar str language: The language of the corpus.
     """
 
     def __init__(self):
@@ -55,6 +56,7 @@ class FasttextSettings:
         self.workers = "localhost:7777"
         self.ps = ""
         self.num_batch_files = 1
+        self.language = 'german'
 
     @staticmethod
     def preprocessing_settings():
@@ -64,7 +66,8 @@ class FasttextSettings:
         """
         return ["corpus_path", "batches_file", "vocabulary_size",
                 "batch_size", "skip_window", "ngram_size", "num_buckets",
-                "rejection_threshold", "profile", "num_batch_files"]
+                "rejection_threshold", "profile", "num_batch_files",
+                "language"]
 
     @staticmethod
     def training_settings():
