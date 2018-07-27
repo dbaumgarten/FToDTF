@@ -32,6 +32,7 @@ sudo docker run --rm -it -v `pwd`:/data dbaumgarten/ftodtf train
 ```
 
 ## Distributed Setup
+### Docker
 There is docker-compose file demonstrating the distributed setup op this programm. To run a cluster on your local machine 
 - go to the directory of the docker-compose file
 - preprocess your data using `fasttext preprocess --corpus_path <your-training-data>`
@@ -42,6 +43,8 @@ sudo docker-compose up
 This will start a cluster consisting of two workers and two parameter servers on your machine.  
 Each time you restart the cluster it will continue to work from the last checkpoint. If you want to start from zero delete the contents of ./log/distributed on the server of worker0
 Please note that running a cluster on a single machine is slower then running a single instance directly on this machine. To see some speedup you will need to use multiple independent machines.
+### Slurm
+There is also an example how to use slurm for setting up distributed training (slurmjob.sh). You will probably have to modify the script to work on your specfic cluster. Please not that the slurm-script currently only handles training. You will have to create training-batches (fasttext preprocess) and copy the created batches-files to the cluster-nodes manually befor starting training.
 
 ## Known Bugs and Limitations
 - When supplying input-text that does not contain sentences (but instead just a bunch of words without punctuation) ```fasttext preprocess``` will hang indefinetly.
