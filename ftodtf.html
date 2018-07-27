@@ -222,10 +222,18 @@ create a mapping word-&gt;int</p>
 
 <dl class="function">
 <dt id="ftodtf.input.find_and_clean_sentences">
-<code class="descclassname">ftodtf.input.</code><code class="descname">find_and_clean_sentences</code><span class="sig-paren">(</span><em>corpus</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.input.find_and_clean_sentences" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">ftodtf.input.</code><code class="descname">find_and_clean_sentences</code><span class="sig-paren">(</span><em>corpus</em>, <em>language</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.input.find_and_clean_sentences" title="Permalink to this definition">¶</a></dt>
 <dd><p>Uses NLTK to parse the corpus and find the sentences.
 :param str corpus: The corpus where the sentences should be found.
 :return: A list with sentences.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="ftodtf.input.find_and_clean_sentences_helper">
+<code class="descclassname">ftodtf.input.</code><code class="descname">find_and_clean_sentences_helper</code><span class="sig-paren">(</span><em>args</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.input.find_and_clean_sentences_helper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Auxiliary function to unwrap the arguments for multiprocessing.
+:param args: Takes the corpus and specified language of the corpus.
+:return: The result of the find_and_clean_sentence function.</p>
 </dd></dl>
 
 <dl class="function">
@@ -481,6 +489,7 @@ Exists as seperate function to minimize code-duplication between training and in
 <li><strong>ps</strong> (<em>str</em>) – A comma seperated list of host:port combinations representing the parameter servers in the distributed setup. If empty a non-distributed setup is assumed.</li>
 <li><strong>num_batch_files</strong> (<em>int</em>) – Number of batch files which should be created.</li>
 <li><strong>index</strong> (<em>int</em>) – The of the node itself in the list of –workers (or –ps, depending on –job).</li>
+<li><strong>language</strong> (<em>str</em>) – The language of the corpus.</li>
 </ul>
 </td>
 </tr>
