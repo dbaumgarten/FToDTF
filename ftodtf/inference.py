@@ -2,6 +2,7 @@
     Currently the only implemented thing is to compute the similarities between words.
 """
 import tensorflow as tf
+
 import ftodtf.model as model
 import ftodtf.input as inp
 

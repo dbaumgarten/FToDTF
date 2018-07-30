@@ -1,5 +1,6 @@
 # pylint: disable=missing-docstring
 import pytest
+
 import ftodtf.settings
 
 

@@ -44,7 +44,7 @@ eine Liste mit den Sätzen als Elemente.
 hilft im  späteren Verlauf des Algorithmus seltene Wörter zu eliminieren. Zuvor wird jedoch über die
 einfache Häufigkeit ein weiterer Eliminierungprozess durchgeführt.
 
-3. Über eine Generator-Pipeline werden die Sätze geparsd. Dabei gibt der Parameter skip_window die 
+3. Über eine Generator-Pipeline werden die Sätze geparst. Dabei gibt der Parameter skip_window die 
 "Fensterbreite" des Targetwortes an und generiert die jeweiligen Tupel (Targetwort, Kontextwort). 
 Nun kommt die Drop-Probability zum Einsatz. Dieser
 Wert entscheidet darüber, ob das betrachtende Kontextwort bleibt oder nicht. Über die

@@ -1,6 +1,8 @@
 import sys
 import pytest
+
 from mock import patch
+
 import ftodtf.cli as cli
 
 

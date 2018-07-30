@@ -202,7 +202,7 @@ def check_nodelist(noli, allow_empty=False):
 
 
 def check_corpus_path(corpus_path):
-    if not os.path.isfile(corpus_path):
+    if not os.path.isfile(corpus_path) and not os.path.isdir(corpus_path):
         raise FileNotFoundError("The specified corpus was not found!")
 
 

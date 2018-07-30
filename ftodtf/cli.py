@@ -1,11 +1,12 @@
 """ This module handles parsing of cli-flags and then calls the needed function
 from the library"""
-
 import sys
 import argparse
 from multiprocessing import Process
 from multiprocessing.queues import Empty
+
 from tqdm import tqdm
+
 import ftodtf.model
 import ftodtf.training
 import ftodtf.input

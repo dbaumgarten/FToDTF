@@ -1,12 +1,14 @@
 # pylint: disable=missing-docstring
-from tempfile import tempdir
-from os.path import join
 import os
+import shutil
+from os.path import join
+from tempfile import tempdir
+
 import pytest
+
+import ftodtf.input as inp
 import ftodtf.training as ft
 from ftodtf.settings import FasttextSettings
-import ftodtf.input as inp
-import shutil
 
 
 TESTDATA = """anarchism originated as a term of abuse first used against early

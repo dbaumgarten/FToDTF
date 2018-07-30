@@ -1,11 +1,11 @@
 """This module handles all the input-relatet tasks like loading, pre-processing
 and batching"""
-
 import os
 import re
 import random
 import collections
 import multiprocessing as mp
+
 import fnvhash
 import numpy as np
 import tensorflow as tf
@@ -153,6 +153,20 @@ def find_and_clean_sentences(corpus, language):
     return sentence_tokens
 
 
+def parse_files_sequential(file_folder, language, sentences):
+    """
+    Parse the raw data files from the training folder sequentially.
+    :param file_folder: The folder which contains the raw text files.
+    :param language: The language of the text files.
+    :param sentences: A reference to the sentence list.
+    """
+    for file in os.listdir(file_folder):
+        if os.path.isfile(file_folder + '/' + file):
+            with open(file_folder + '/' + file) as f:
+                result_sents = find_and_clean_sentences(f.read(), language)
+                sentences.extend(result_sents)
+
+
 def find_and_clean_sentences_helper(args):
     """
     Auxiliary function to unwrap the arguments for multiprocessing.
@@ -207,31 +221,40 @@ class InputProcessor:
     @inform_progressbar
     def _process_text(self):
         """
-        First check if the corpus should be processed with multiple cores. If
-        the corpus is large enough than cut the corpus into pieces and use
-        multiprocessing to process the pieces simultaneously. It could cut some
-        words into meaningless chunks but if the corpus is large enough than
-        this little  changes should not have a big impact on the word vectors.
+        First check if the user provided a folder with the raw text files.
+        If No, than check if the corpus file should be processed with multiple cores.
+        This will happen if it is large enough (>= 100MB). Than cut the corpus
+        into pieces and use multiprocessing to process the pieces simultaneously.
+        It could cut some words into meaningless chunks but if the corpus is
+        large enough than these little changes should not have a big impact on
+        the word vectors.
         """
 
-        with open(self.settings.corpus_path) as f:
-            corpus = f.read()
-            if os.path.getsize(self.settings.corpus_path) / (1024 * 1024) < 100:
-                self.sentences = find_and_clean_sentences(corpus, self.settings.language)
-            else:
-                size_per_cpu = len(corpus) // mp.cpu_count()
-                pool = mp.Pool(processes=mp.cpu_count() - 2)
-                corpus_chunks = []
+        # Check if the user proved a folder with the raw text files
+        if os.path.isdir(self.settings.corpus_path):
+            parse_files_sequential(self.settings.corpus_path,
+                                   self.settings.language,
+                                   self.sentences)
+        # Parse the Single file
+        else:
+            with open(self.settings.corpus_path) as f:
+                corpus = f.read()
+                if os.path.getsize(self.settings.corpus_path) / (1024 * 1024) < 100:
+                    self.sentences = find_and_clean_sentences(corpus, self.settings.language)
+                else:
+                    size_per_cpu = len(corpus) // mp.cpu_count()
+                    pool = mp.Pool(processes=mp.cpu_count() - 2)
+                    corpus_chunks = []
 
-                for i in range(0, mp.cpu_count()):
-                    corpus_chunks.append(
-                        corpus[i * size_per_cpu:(i + 1) * size_per_cpu])
+                    for i in range(0, mp.cpu_count()):
+                        corpus_chunks.append(
+                            corpus[i * size_per_cpu:(i + 1) * size_per_cpu])
 
-                job_args = [(e, self.settings.language) for e in corpus_chunks]
-                result = pool.map(find_and_clean_sentences_helper, job_args)
-                for sentence_bundle in result:
-                    for sentence in sentence_bundle:
-                        self.sentences.append(sentence)
+                    job_args = [(e, self.settings.language) for e in corpus_chunks]
+                    result = pool.map(find_and_clean_sentences_helper, job_args)
+                    for sentence_bundle in result:
+                        for sentence in sentence_bundle:
+                            self.sentences.append(sentence)
 
     def _words_in_corpus(self):
         """

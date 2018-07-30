@@ -1,12 +1,15 @@
 # pylint: disable=missing-docstring,W0212
-from tempfile import gettempdir
-from os.path import join
 import os
+from os.path import join
+from tempfile import gettempdir
+
+import fnvhash
 
 import ftodtf.input as inp
 from ftodtf.settings import FasttextSettings
 from ftodtf.input import find_and_clean_sentences
-import fnvhash
+from ftodtf.input import parse_files_sequential
+
 
 
 TESTFILECONTENT = """dies ist eine test datei.
@@ -16,6 +19,8 @@ bla bla bla.
 
 TESTFILENAME = join(gettempdir(), "ftodtftestfile")
 TESTBATCHESFILENAME = join(gettempdir(), "ftodtftestbatchfile")
+TESTFOLDER = join(gettempdir(), "corpus_folder")
+
 
 # Shared settings for all test-cases that are OK with the default values
 SETTINGS = FasttextSettings()
@@ -30,6 +35,12 @@ def setup_module():
 
 def teardown_module():
     os.remove(TESTFILENAME)
+    for root, dirs, files in os.walk(TESTFOLDER, topdown=False):
+        for name in files:
+            os.remove(os.path.join(root, name))
+        for name in dirs:
+            os.rmdir(os.path.join(root, name))
+    os.rmdir(TESTFOLDER)
 
 
 def test_generate_ngram_per_word():
@@ -197,3 +208,17 @@ def test_find_and_clean_sentences():
     assert find_and_clean_sentences(test_sentence_en, "english") == result_sentence_en
 
 
+def test_parse_files_sequential():
+    os.makedirs(TESTFOLDER)
+    for i in range(0, 2):
+        with open(join(TESTFOLDER, 'test_file_'+str(i)), 'w') as f:
+            f.write(TESTFILECONTENT)
+    ipp = inp.InputProcessor(SETTINGS)
+    parse_files_sequential(TESTFOLDER, 'german', ipp.sentences)
+    print(ipp.sentences)
+    assert ipp.sentences == ['dies ist eine test datei',
+                             'der text hier ist testtext',
+                             'bla bla bla',
+                             'dies ist eine test datei',
+                             'der text hier ist testtext',
+                             'bla bla bla']

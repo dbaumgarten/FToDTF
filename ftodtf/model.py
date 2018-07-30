@@ -1,9 +1,11 @@
 """This module handles the building of the tf execution graph"""
-import math
-import os
-import tensorflow as tf
-import ftodtf.input as inp
 import re
+import os
+import math
+
+import tensorflow as tf
+
+import ftodtf.input as inp
 
 
 def parse_batch_func(batch_size):
