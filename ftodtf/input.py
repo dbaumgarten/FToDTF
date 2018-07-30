@@ -230,12 +230,12 @@ class InputProcessor:
         the word vectors.
         """
 
-        # Check if the user proved a folder with the raw text files
+        # Check if the user provided a folder with the raw text files
         if os.path.isdir(self.settings.corpus_path):
             parse_files_sequential(self.settings.corpus_path,
                                    self.settings.language,
                                    self.sentences)
-        # Parse the Single file
+        # Parse the single file
         else:
             with open(self.settings.corpus_path) as f:
                 corpus = f.read()
