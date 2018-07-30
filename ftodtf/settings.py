@@ -219,23 +219,20 @@ def check_rejection_threshold(rejection_threshold):
 
 
 def check_batch_size(batch_size):
-    if batch_size < 32 or batch_size > 1024:
+    if batch_size < 1:
         # Practical recommendations for gradient-based training of deep architectures
         # https://arxiv.org/abs/1206.5533
-        raise ValueError("The recommended batch-size should be between 32 and"
-                         "1024")
+        raise ValueError("The batch-size must be >= 1")
 
 
 def check_skip_window(skip_window):
-    if skip_window < 1 or skip_window > 5:
-        raise ValueError("The recommended window size should be between 1 and "
-                         "5")
+    if skip_window < 1:
+        raise ValueError("The window size must be >= 1")
 
 
 def check_ngram_size(ngram_size):
     if ngram_size < 3 or ngram_size > 6:
-        raise ValueError("The recommended n-gram size should be between 3 and "
-                         "6.")
+        raise ValueError("The n-gram size must be between >= 3")
 
 
 def check_num_buckets(number_buckets):
@@ -256,23 +253,22 @@ def check_log_dir(log_dir):
 
 def check_steps(steps):
     if steps < 1:
-        raise ValueError("Number of steps should be bigger than 0.")
+        raise ValueError("Number of steps must be bigger than 0.")
 
 
 def check_embedding_size(embedding_size):
-    if embedding_size < 50 or embedding_size > 1000:
-        raise ValueError("The recommended embedding size should be between 50 "
-                         "and 1000.")
+    if embedding_size <= 0:
+        raise ValueError("The embedding size must be >= 1.")
 
 
 def check_num_sampled(num_sampled):
-    if num_sampled < 1 or num_sampled > 10:
-        raise ValueError("The recommended number of negative samples should be"
-                         "between 1 and 10.")
+    if num_sampled <= 0:
+        raise ValueError("The number of negative samples should be"
+                         ">= 1")
 
 
 def check_learn_rate(learnrate):
     if learnrate < 0.01 or learnrate > 1.0:
         # https://fasttext.cc/docs/en/supervised-tutorial.html
-        raise ValueError("The recommended learning rate should be between 0.01"
+        raise ValueError("The learning rate should be between 0.01"
                          " and 1.0.")

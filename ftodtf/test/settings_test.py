@@ -83,11 +83,11 @@ def test_check_index():
 
 def test_validate_preprocess():
     seti = ftodtf.settings.FasttextSettings()
-    seti.batches_size = 10000
+    seti.batches_size = 0
     with pytest.raises(Exception):
         seti.validate_preprocess()
 
-    seti.embedding_size = 10000
+    seti.embedding_size = 0
     with pytest.raises(Exception):
         seti.validate_train()
 
@@ -109,19 +109,19 @@ def test_check_rejection_threshold(test_input):
         ftodtf.settings.check_rejection_threshold(test_input)
 
 
-@pytest.mark.parametrize("test_input", [31, 1025])
+@pytest.mark.parametrize("test_input", [-5, 0])
 def test_check_batch_size(test_input):
     with pytest.raises(ValueError):
         ftodtf.settings.check_batch_size(test_input)
 
 
-@pytest.mark.parametrize("test_input", [0, 6])
+@pytest.mark.parametrize("test_input", [0, -1])
 def test_check_skip_window(test_input):
     with pytest.raises(ValueError):
         ftodtf.settings.check_skip_window(test_input)
 
 
-@pytest.mark.parametrize("test_input", [2, 7])
+@pytest.mark.parametrize("test_input", [2, 1])
 def test_check_ngram_size(test_input):
     with pytest.raises(ValueError):
         ftodtf.settings.check_ngram_size(test_input)
@@ -147,13 +147,13 @@ def test_check_steps():
         ftodtf.settings.check_steps(-1)
 
 
-@pytest.mark.parametrize("test_input", [49, 1001])
+@pytest.mark.parametrize("test_input", [-5, 0])
 def test_check_embedding_size(test_input):
     with pytest.raises(ValueError):
         ftodtf.settings.check_embedding_size(test_input)
 
 
-@pytest.mark.parametrize("test_input", [-1, 11])
+@pytest.mark.parametrize("test_input", [-1, 0])
 def test_check_num_sampled(test_input):
     with pytest.raises(ValueError):
         ftodtf.settings.check_num_sampled(test_input)
