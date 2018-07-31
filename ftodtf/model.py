@@ -197,8 +197,9 @@ def create_embedding_weights(settings):
         slicing=[len(settings.ps_list)
                  if settings.ps_list else 1,
                  1],
-        initializer=tf.random_uniform(
-            [settings.num_buckets, settings.embedding_size], -1.0, 1.0),
+        #initializer= tf.random_uniform(
+        #    [settings.num_buckets, settings.embedding_size], 0, 1.0),
+        initializer=tf.contrib.layers.xavier_initializer(),
         dtype=tf.float32,
         trainable=True,
         name="embeddings"
