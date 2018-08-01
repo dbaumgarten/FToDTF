@@ -11,6 +11,7 @@ import ftodtf.model
 import ftodtf.training
 import ftodtf.input
 import ftodtf.inference
+import ftodtf.export
 from ftodtf.settings import FasttextSettings
 
 
@@ -23,9 +24,14 @@ PARSER = argparse.ArgumentParser(
 SUBPARSER = PARSER.add_subparsers(dest="command")
 PREPROCESS_PARSER = SUBPARSER.add_parser("preprocess")
 TRAIN_PARSER = SUBPARSER.add_parser("train")
+
 INFER_PARSER = SUBPARSER.add_parser("infer")
 INFER_SUBPARSER = INFER_PARSER.add_subparsers(dest="subcommand")
 INFER_SIMILARITIES = INFER_SUBPARSER.add_parser("similarities")
+
+EXPORT_PARSER = SUBPARSER.add_parser("export")
+EXPORT_SUBPARSER = EXPORT_PARSER.add_subparsers(dest="subcommand")
+EXPORT_EMBEDDINGS = EXPORT_SUBPARSER.add_parser("embeddings")
 
 
 def add_arguments_to_parser(arglist, parser, required, group=None):
@@ -62,6 +68,9 @@ add_arguments_to_parser(SETTINGS.inference_settings(),
                         [])
 
 INFER_SIMILARITIES.add_argument("words", type=str, nargs="+")
+
+EXPORT_PARSER.add_argument("-outdir", type=str, default="./export",
+                           help="The directory to store the exports in. Default ./export")
 
 
 def spawn_progress_bar():
@@ -141,6 +150,8 @@ def cli_main():
             ftodtf.training.train(SETTINGS)
     elif flags.command == "infer" and flags.subcommand == "similarities":
         ftodtf.inference.compute_similarities(flags.words, SETTINGS)
+    elif flags.command == "export" and flags.subcommand == "embeddings":
+        ftodtf.export.export_embeddings(SETTINGS, flags.outdir)
     else:
         PARSER.print_help()
 

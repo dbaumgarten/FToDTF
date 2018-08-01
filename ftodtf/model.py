@@ -1,10 +1,6 @@
 """This module handles the building of the tf execution graph"""
-import re
-import os
 import math
-
 import tensorflow as tf
-
 import ftodtf.input as inp
 
 
@@ -121,7 +117,7 @@ class TrainingModel():
                 self.merged = tf.summary.merge_all()
 
                 # Create a saver to save the trained variables once training is over
-                self._saver = tf.train.Saver()
+                self._saver = tf.train.Saver(save_relative_paths=True)
 
                 if settings.validation_words_list:
                     ngrams = inp.words_to_ngramhashes(
@@ -197,7 +193,7 @@ def create_embedding_weights(settings):
         slicing=[len(settings.ps_list)
                  if settings.ps_list else 1,
                  1],
-        #initializer= tf.random_uniform(
+        # initializer= tf.random_uniform(
         #    [settings.num_buckets, settings.embedding_size], 0, 1.0),
         initializer=tf.contrib.layers.xavier_initializer(),
         dtype=tf.float32,
@@ -233,12 +229,6 @@ class InferenceModel():
         :param str logdir: The path of the folder where the checkpoints created by the training were saved
         :param tf.Session session: The session to restore the variables into
         """
-        rex = re.compile("model\\.ckpt-([0-9]+)\\.index")
-        files = os.listdir(logdir)
-        ckpts = [int(y.group(1)) for y in [rex.match(x) for x in files] if y]
-        if not ckpts:
-            raise FileNotFoundError("No checkpoint found inside the log_dir")
-        ckpts = sorted(ckpts)
-        checkpointfile = os.path.join(logdir, "model.ckpt-"+str(ckpts[-1]))
-        print("Loading checkpoint:", checkpointfile)
-        self.saver.restore(session, checkpointfile)
+        latest = tf.train.latest_checkpoint(logdir)
+        print("Loading checkpoint:", latest)
+        self.saver.restore(session, latest)
