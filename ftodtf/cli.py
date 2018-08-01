@@ -19,19 +19,24 @@ PREPROCESS_REQUIRED_PARAMETERS = ["corpus_path"]
 TRAIN_REQUIRED_PARAMETERS = []
 SETTINGS = FasttextSettings()
 PARSER = argparse.ArgumentParser(
-    description="Unsupervised training of word-vectors.")
+    description="Unsupervised training of word-vector-embeddings.")
 
 SUBPARSER = PARSER.add_subparsers(dest="command")
-PREPROCESS_PARSER = SUBPARSER.add_parser("preprocess")
-TRAIN_PARSER = SUBPARSER.add_parser("train")
+PREPROCESS_PARSER = SUBPARSER.add_parser(
+    "preprocess", help="Convert raw text to training-data for use in the train step.")
+TRAIN_PARSER = SUBPARSER.add_parser(
+    "train", help="Train word-embeddings using previously created training-data.")
 
-INFER_PARSER = SUBPARSER.add_parser("infer")
+INFER_PARSER = SUBPARSER.add_parser("infer", help="Use trained embeddings.")
 INFER_SUBPARSER = INFER_PARSER.add_subparsers(dest="subcommand")
-INFER_SIMILARITIES = INFER_SUBPARSER.add_parser("similarities")
+INFER_SIMILARITIES = INFER_SUBPARSER.add_parser(
+    "similarities", help="Compute the similarities between given words.")
 
-EXPORT_PARSER = SUBPARSER.add_parser("export")
+EXPORT_PARSER = SUBPARSER.add_parser(
+    "export", help="Export trained embeddings.")
 EXPORT_SUBPARSER = EXPORT_PARSER.add_subparsers(dest="subcommand")
-EXPORT_EMBEDDINGS = EXPORT_SUBPARSER.add_parser("embeddings")
+EXPORT_EMBEDDINGS = EXPORT_SUBPARSER.add_parser(
+    "embeddings", help="Export the embeddings in tensorflows checkpoint-format. Can be used for fasttext infer and is smaller than regular training-chekpoints")
 
 
 def add_arguments_to_parser(arglist, parser, required, group=None):
@@ -67,7 +72,8 @@ add_arguments_to_parser(SETTINGS.inference_settings(),
                         INFER_PARSER,
                         [])
 
-INFER_SIMILARITIES.add_argument("words", type=str, nargs="+")
+INFER_SIMILARITIES.add_argument("words", type=str, nargs="+",
+                                help=" A list of words of which the similarities to each other should be computed.")
 
 EXPORT_PARSER.add_argument("-outdir", type=str, default="./export",
                            help="The directory to store the exports in. Default ./export")
