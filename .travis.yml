@@ -38,7 +38,7 @@ jobs:
         - docker
       script:
         - docker build -t fasttext .
-        - docker run --rm -it fasttext | grep "training of word-vectors"
+        - docker run --rm -it fasttext | grep "training of word-vector-embeddings"
       after_success:
         - "curl -H \"Content-Type: application/json\" --data '{\"source_type\": \"Branch\", \"source_name\": \"master\"}' -X POST https://registry.hub.docker.com/u/dbaumgarten/ftodtf/trigger/$DOCKERHUB_TOKEN/"
       on:
