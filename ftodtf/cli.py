@@ -75,6 +75,11 @@ add_arguments_to_parser(SETTINGS.inference_settings(),
 INFER_SIMILARITIES.add_argument("words", type=str, nargs="+",
                                 help=" A list of words of which the similarities to each other should be computed.")
 
+# Export uses the same parameters as settigns, because both build an InferenceModel (and therefore need exactly the same settings).
+add_arguments_to_parser(SETTINGS.inference_settings(),
+                        EXPORT_PARSER,
+                        [])
+
 EXPORT_PARSER.add_argument("-outdir", type=str, default="./export",
                            help="The directory to store the exports in. Default ./export")
 
