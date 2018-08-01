@@ -12,6 +12,14 @@ ftodtf.cli module
     :undoc-members:
     :show-inheritance:
 
+ftodtf.export module
+--------------------
+
+.. automodule:: ftodtf.export
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
 ftodtf.inference module
 -----------------------
 

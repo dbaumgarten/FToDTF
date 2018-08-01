@@ -96,6 +96,30 @@ finishes only when the function “write_batches_to_file” ends.</p>
 </dd></dl>
 
 </div>
+<div class="section" id="module-ftodtf.export">
+<span id="ftodtf-export-module"></span><h2>ftodtf.export module<a class="headerlink" href="#module-ftodtf.export" title="Permalink to this headline">¶</a></h2>
+<p>This module handles the expporting of trained models</p>
+<dl class="function">
+<dt id="ftodtf.export.export_embeddings">
+<code class="descclassname">ftodtf.export.</code><code class="descname">export_embeddings</code><span class="sig-paren">(</span><em>settings</em>, <em>outputdir</em><span class="sig-paren">)</span><a class="headerlink" href="#ftodtf.export.export_embeddings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Builds an model using the given settings, loads the last checkpoint and saves only the embedding-variable to a new checkpoint inside outputdir,
+leaving out all the other weights. The new checkpoint is much smaller then the original.
+This new Checkpoint can be used for inference but not to continue training.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>settings</strong> (<a class="reference internal" href="#ftodtf.settings.FasttextSettings" title="ftodtf.settings.FasttextSettings"><em>ftodtf.settings.FasttextSettings</em></a>) – The settings for the model</li>
+<li><strong>outputdir</strong> (<em>str</em>) – The directory to store the new checkpoint to.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
 <div class="section" id="module-ftodtf.inference">
 <span id="ftodtf-inference-module"></span><h2>ftodtf.inference module<a class="headerlink" href="#module-ftodtf.inference" title="Permalink to this headline">¶</a></h2>
 <p>This module contains functions to use trained word-embeddings to do usefull things
