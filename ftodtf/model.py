@@ -53,6 +53,7 @@ class TrainingModel():
                     [settings.batches_file]).repeat()
                 batches = inputpipe.map(parse_batch_func(
                     settings.batch_size), num_parallel_calls=4)
+                batches = batches.shuffle(1000)
                 batches = batches.prefetch(1)
 
                 iterator = batches.make_initializable_iterator()
