@@ -39,14 +39,14 @@ class FasttextSettings:
         self.corpus_path = ""
         self.batches_file = DEFAULT_BATCHES_FILE
         self.log_dir = DEFAULT_LOGPATH
-        self.steps = 100001
+        self.steps = 500001
         self.vocabulary_size = 50000
         self.batch_size = 128
         self.embedding_size = 300
         self.skip_window = 5
         self.num_sampled = 5
         self.ngram_size = 3
-        self.num_buckets = 10000   # In paper 210**6, but "test_fasttext" will fail
+        self.num_buckets = 200000   # In paper 210**6, but this would lead to OOM on small GPUs
         self.validation_words = ""
         self.profile = False
         self.learnrate = 0.1
