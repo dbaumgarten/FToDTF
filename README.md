@@ -10,7 +10,7 @@ This software is an implementation of https://arxiv.org/abs/1607.04606 (facebook
 In contrast to the original implementation of fasttext (https://github.com/facebookresearch/fastText) this implementation can use GPUs to accelerate the training and the training can be distributed across multiple nodes.
 
 ## Installation
-Run ```pip3 install https://github.com/dbaumgarten/FToDTF.git```  
+Run ```pip3 install git+https://github.com/dbaumgarten/FToDTF.git```  
 The programm is now installed system-wide. You can now import the package ftodtf in python3 and run the cli-command ```fasttext <optional args>```
 
 ## Running
