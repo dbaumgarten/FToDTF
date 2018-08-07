@@ -78,6 +78,7 @@ def write_batches_to_file(batchgenerator, filename, num_batch_files):
     :param batchgenerator: A generator yielding training-batches
     :param str filename: The full path of the file into which the batches should be written
     :param int num_batch_files: The number of files.
+    :raises Warning: If no batch could be generated because of a lack of inpput-data
     """
 
     writers = []
@@ -112,6 +113,10 @@ def write_batches_to_file(batchgenerator, filename, num_batch_files):
     for writer in writers:
         writer.flush()
         writer.close()
+
+    if batch_counter == 0:
+        raise Warning(
+            "No batches could be generated. Please make sure you provided enough input-data to generate batches of the desired size.")
 
 
 def words_to_ngramhashes(words, num_buckets):
@@ -240,7 +245,8 @@ class InputProcessor:
             with open(self.settings.corpus_path) as f:
                 corpus = f.read()
                 if os.path.getsize(self.settings.corpus_path) / (1024 * 1024) < 100:
-                    self.sentences = find_and_clean_sentences(corpus, self.settings.language)
+                    self.sentences = find_and_clean_sentences(
+                        corpus, self.settings.language)
                 else:
                     size_per_cpu = len(corpus) // mp.cpu_count()
                     pool = mp.Pool(processes=mp.cpu_count() - 2)
@@ -250,8 +256,10 @@ class InputProcessor:
                         corpus_chunks.append(
                             corpus[i * size_per_cpu:(i + 1) * size_per_cpu])
 
-                    job_args = [(e, self.settings.language) for e in corpus_chunks]
-                    result = pool.map(find_and_clean_sentences_helper, job_args)
+                    job_args = [(e, self.settings.language)
+                                for e in corpus_chunks]
+                    result = pool.map(
+                        find_and_clean_sentences_helper, job_args)
                     for sentence_bundle in result:
                         for sentence in sentence_bundle:
                             self.sentences.append(sentence)

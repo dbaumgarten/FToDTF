@@ -147,9 +147,14 @@ def cli_main():
             p.start()
             ipp = ftodtf.input.InputProcessor(SETTINGS)
             ipp.preprocess()
-            ftodtf.input.write_batches_to_file(ipp.batches(),
-                                               SETTINGS.batches_file,
-                                               SETTINGS.num_batch_files)
+            try:
+                ftodtf.input.write_batches_to_file(ipp.batches(),
+                                                   SETTINGS.batches_file,
+                                                   SETTINGS.num_batch_files)
+            except Warning as w:
+                # write_batches_to_file will raise a warning if there is not enough input-data
+                print(w)
+                sys.exit(1)
             p.join()
     elif flags.command == "train":
         try:

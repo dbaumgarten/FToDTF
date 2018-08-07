@@ -4,12 +4,12 @@ from os.path import join
 from tempfile import gettempdir
 
 import fnvhash
+import pytest
 
 import ftodtf.input as inp
 from ftodtf.settings import FasttextSettings
 from ftodtf.input import find_and_clean_sentences
 from ftodtf.input import parse_files_sequential
-
 
 
 TESTFILECONTENT = """dies ist eine test datei.
@@ -199,13 +199,24 @@ def test_write_batches_to_file():
     assert filesize > 100
 
 
+def test_write_batches_to_file_insuffucuent_data():
+    ipp = inp.InputProcessor(SETTINGS)
+    ipp.preprocess()
+    # Without repetition of the training data (like in the previous testcase) the function should raise a warning about insufficient input-data
+    batches = ipp.batches()
+    with pytest.raises(Warning):
+        inp.write_batches_to_file(batches, SETTINGS.batches_file, 1)
+
+
 def test_find_and_clean_sentences():
     test_sentence_de = "Ich bin der este Satz! Und ich bin, der zweite."
     test_sentence_en = "I'm the first sentence. Are you the second one?"
     result_sentence_de = ["ich bin der este satz", "und ich bin der zweite"]
     result_sentence_en = ["i m the first sentence", "are you the second one"]
-    assert find_and_clean_sentences(test_sentence_de, "german") == result_sentence_de
-    assert find_and_clean_sentences(test_sentence_en, "english") == result_sentence_en
+    assert find_and_clean_sentences(
+        test_sentence_de, "german") == result_sentence_de
+    assert find_and_clean_sentences(
+        test_sentence_en, "english") == result_sentence_en
 
 
 def test_parse_files_sequential():
