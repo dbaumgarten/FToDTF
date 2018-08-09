@@ -62,3 +62,6 @@ We got really good results for german with 81MB of training-data and the paramet
 ## Documentation
 You can find the auto-genrated documentation for the code here: https://dbaumgarten.github.io/FToDTF/  
 The architecture documentation (german only) can be found here: https://github.com/dbaumgarten/FToDTF/blob/master/docs/architecture/architecture.md
+
+## Acknowledgements
+Computations for this work (like the testing of the distributed-training functionalities) were done with resources of Leipzig University Computing Centre.
